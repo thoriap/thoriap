@@ -1,4 +1,4 @@
-thoriap
+Thoriap
 =======
 
-Content Management System
+Open Source Content Management System
