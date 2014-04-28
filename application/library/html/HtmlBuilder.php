@@ -102,10 +102,16 @@ class HtmlBuilder {
      */
     public function meta()
     {
+
+        $html = array();
+
         foreach($this->view->getMeta() as $name=>$value)
         {
-            return '<meta name="'.$name.'" content="'.$value.'">'.PHP_EOL;
+            $html[] = '<meta name="'.$name.'" content="'.$value.'">'.PHP_EOL;
         }
+
+        return implode('', $html);
+
     }
 
     /**

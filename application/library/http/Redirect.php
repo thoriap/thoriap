@@ -394,21 +394,41 @@ class Redirect {
 
     /**
      * Form verilerini sonraki sayfaya aktarır.
+     * Özellikle belirtilenleri eskilerinin üstüne yazar.
      *
-     * @param array $inputData
+     * @param array $inputs
      * @return Redirect
      */
-    public function withInput(array $inputData = array())
+    public function withInput(array $inputs = array())
     {
 
         $oldInput = $this->request->inputSource();
 
-        if ( $inputData )
+        if ( count($inputs) )
         {
-            $oldInput = array_replace($oldInput, $inputData);
+            $oldInput = array_replace($oldInput, $inputs);
         }
 
         $this->session->setOldInput($oldInput);
+
+        return $this;
+
+    }
+
+    /**
+     * Sadece belirtilen form verilerini sonraki sayfaya aktarır.
+     * Var olanları görmezden gelir.
+     *
+     * @param array $inputs
+     * @return Redirect
+     */
+    public function onlyInput(array $inputs = array())
+    {
+
+        if ( count($inputs) )
+        {
+            $this->session->setOldInput($inputs);
+        }
 
         return $this;
 

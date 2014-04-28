@@ -189,7 +189,7 @@ class Engine {
                             if ( $language->lang_default )
                             {
                                 // Böyle iş olmaz, yönlendir bizi.
-                                return Redirect::to($routes)->withQuery($query);
+                                return Redirect::to($routes)->withParams($query);
                             }
 
                             // Bırak bu işi bırak sen yapma.
