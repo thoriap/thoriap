@@ -5,45 +5,31 @@ namespace Application\Library\Session;
 class Store {
 
     /**
-     * Belirtilen grubu hazırlar.
+     * Session değerlerini saklar.
      *
-     * @param null $group
-     * @return void
+     * @var array
      */
-    private function ready($group = null)
+    private $session;
+
+    /**
+     * Başlangıç işlemleri.
+     *
+     * @return mixed
+     */
+    public function __construct()
     {
-        if (!isset($_SESSION))
+
+        if ( session_status() === PHP_SESSION_NONE )
         {
             session_start();
         }
 
-        if ($group && !isset($_SESSION[$group]))
-        {
-            $_SESSION[$group] = array();
-        }
+        $this->session = &$_SESSION;
+
     }
 
     /**
-     * Yolu bölmek için.
-     *
-     * @param $key
-     * @return array
-     */
-    private function parseKey($key)
-    {
-
-        $parse = explode(".", $key, 2);
-
-        while (count($parse) < 2 )
-        {
-            array_push($parse, null);
-        }
-
-        return $parse;
-    }
-
-    /**
-     * Belirtileni getirir.
+     * Talep edilen Session değerini döndürür.
      *
      * @param $key
      * @param null $default
@@ -51,31 +37,30 @@ class Store {
      */
     public function get($key, $default = null)
     {
-
-        list ($group, $item) = $this->parseKey($key);
-
-        $this->ready($group);
-
-        return array_get($_SESSION[$group], $item, $default);
-
+        return array_get($this->session, $key, $default);
     }
 
     /**
-     * Belirtileni tanımlar.
+     * Belirtilen Session değerini tanımlar.
      *
      * @param $key
-     * @param null $value
+     * @param $value
      * @return void
      */
-    public function set($key, $value = null)
+    public function set($key, $value)
     {
+        array_set($this->session, $key, $value);
+    }
 
-        list ($group, $item) = $this->parseKey($key);
-
-        $this->ready($group);
-
-        array_set($_SESSION[$group], $item, $value);
-
+    /**
+     * Belirtilen Session değerini sıfırlar.
+     *
+     * @param $key
+     * @return void
+     */
+    public function flush($key)
+    {
+        array_forget($this->session, $key);
     }
 
     /**
@@ -87,12 +72,9 @@ class Store {
      */
     public function setLanguages($active, $default)
     {
-
         $this->set('language.active', $active);
 
         $this->set('language.default', $default);
-
-
     }
 
     /**
@@ -103,9 +85,7 @@ class Store {
      */
     public function setActiveLanguage($alias)
     {
-
         $this->set('language.active', $alias);
-
     }
 
     /**
@@ -115,9 +95,7 @@ class Store {
      */
     public function getLanguages()
     {
-
         return $this->get('language');
-
     }
 
     /**
@@ -148,7 +126,7 @@ class Store {
      */
     public function flushErrors()
     {
-        $this->set('error_messages', null);
+        $this->flush('error_messages');
     }
 
     /**
@@ -179,7 +157,7 @@ class Store {
      */
     public function flushOldInput()
     {
-        $this->set('old_input', null);
+        $this->flush('old_input');
     }
 
 }
