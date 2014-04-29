@@ -2,9 +2,8 @@
 
 namespace Application\Library\Core;
 
-use Application\Library\Model\Themes as ModelThemes;
-
 use Config;
+use Application\Library\Alias\Model\Themes;
 
 class Templates {
 
@@ -24,7 +23,7 @@ class Templates {
         {
 
             // Veritabanından bilgilerini getir.
-            $theme = ModelThemes::getOneByName($name);
+            $theme = Themes::getOneByName($name);
 
             // Bu aradığımız ve aktif olan sanırım.
             if (isset($theme->theme_active) && $theme->theme_active == 1)
@@ -54,10 +53,10 @@ class Templates {
         foreach ($themes as $name=>$value)
         {
             // Bu temadan uygulamanın haberi yok galiba?
-            if ( !ModelThemes::getOneByName($name) )
+            if ( !Themes::getOneByName($name) )
             {
                 // Al bunu da ekle, haberin olsun.
-                ModelThemes::getInstance()->insert(array('theme_name' => $name));
+                Themes::insert(array('theme_name' => $name));
             }
         }
 

@@ -334,7 +334,7 @@ class Engine {
             if (!Plugins::getOneByName($name))
             {
                 // Al bunu ekle bakalım dost da düşman da görsün.
-                Plugins::getInstance()->insert(array('plugin_name' => $name));
+                Plugins::insert(array('plugin_name' => $name));
             }
         }
 
