@@ -22,6 +22,13 @@ class Request {
     private $route = array();
 
     /**
+     * Gelen istek türünü tutar.
+     *
+     * @var null
+     */
+    private $method = null;
+
+    /**
      * Referans adresi tutar.
      *
      * @var string
@@ -128,6 +135,35 @@ class Request {
     }
 
     /**
+     * Dışarıdan erişmek için bir adres üretir.
+     *
+     * @param null $url
+     * @return string
+     */
+    public function baseUrl($url = null)
+    {
+
+        // Adres bir dizi mi?
+        if ( is_array($url) )
+        {
+            $url = implode('/', $url);
+        }
+
+        // Ekstra bir dizin var mı?
+        $self = dirname($_SERVER['PHP_SELF']);
+
+        // Ekstra bir dizin varsa ekleyelim.
+        if ( strlen($self) )
+        {
+            $url = $self.'/'.$url;
+        }
+
+        // Temizlik yapıp çıktı verelim.
+        return '/'.trim(preg_replace('/\/+/is','/', $url), '/');
+
+    }
+
+    /**
      * Aktif sorguyu döndürür.
      *
      * @return array
@@ -188,42 +224,37 @@ class Request {
     }
 
     /**
-     * Dışarıdan erişmek için bir adres üretir.
+     * Gelen istek türünü döndürür.
      *
-     * @param null $url
      * @return string
      */
-    public function baseUrl($url = null)
+    public function getMethod()
     {
 
-        // Adres bir dizi mi?
-        if ( is_array($url) )
+        if ( $this->method )
         {
-            $url = implode('/', $url);
+            return $this->method;
         }
 
-        // Ekstra bir dizin var mı?
-        $self = dirname($_SERVER['PHP_SELF']);
-
-        // Ekstra bir dizin varsa ekleyelim.
-        if ( strlen($self) )
-        {
-            $url = $self.'/'.$url;
-        }
-
-        // Temizlik yapıp çıktı verelim.
-        return '/'.trim(preg_replace('/\/+/is','/', $url), '/');
+        return $this->method = strtoupper($_SERVER['REQUEST_METHOD']) ?: 'GET';
 
     }
 
     /**
-     * Gelen istek türünü döndürür.
+     * Gelen istek GET ise olumlu döner.
      *
-     * @return mixed
+     * @return bool
      */
-    public function getMethod()
+    public function isGetRequest()
     {
-        return $_SERVER['REQUEST_METHOD'];
+
+        if ( $this->getMethod() === 'GET' )
+        {
+            return true;
+        }
+
+        return false;
+
     }
 
     /**
@@ -231,10 +262,78 @@ class Request {
      *
      * @return bool
      */
-    public function isPost()
+    public function isPostRequest()
     {
 
         if ( $this->getMethod() === 'POST' )
+        {
+            return true;
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Gelen istek PUT ise olumlu döner.
+     *
+     * @return bool
+     */
+    public function isPutRequest()
+    {
+
+        if ( $this->getMethod() === 'PUT' )
+        {
+            return true;
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Gelen istek PATCH ise olumlu döner.
+     *
+     * @return bool
+     */
+    public function isPatchRequest()
+    {
+
+        if ( $this->getMethod() === 'PATCH' )
+        {
+            return true;
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Gelen istek DELETE ise olumlu döner.
+     *
+     * @return bool
+     */
+    public function isDeleteRequest()
+    {
+
+        if ( $this->getMethod() === 'DELETE' )
+        {
+            return true;
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Gelen istek HEAD ise olumlu döner.
+     *
+     * @return bool
+     */
+    public function isHeadRequest()
+    {
+
+        if ( $this->getMethod() === 'HEAD' )
         {
             return true;
         }
@@ -248,18 +347,20 @@ class Request {
      *
      * @return bool
      */
-    public function isAjax()
+    public function isXmlHttpRequest()
     {
+
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest')
         {
             return true;
         }
 
         return false;
+
     }
 
     /**
-     * Kullanıcının dil bilgisini çıktılar.
+     * Kullanıcının dil bilgisini verir.
      *
      * @return string|null
      */
