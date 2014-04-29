@@ -190,7 +190,7 @@ class Request {
     /**
      * Referans adresi çıktılar.
      *
-     * @return string|null
+     * @return null|string
      */
     public function referer()
     {
@@ -214,12 +214,29 @@ class Request {
     /**
      * Kullanıcının IP adresini çıktılar.
      *
-     * @return null|string
+     * @return string|null
      */
     public function getClientIp()
     {
 
         return $this->clientIp;
+
+    }
+
+    /**
+     * Kullanıcının tarayıcısının dil bilgisini verir.
+     *
+     * @return string|null
+     */
+    public function getClientLang()
+    {
+
+        if ( isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) )
+        {
+            return substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
+        }
+
+        return null;
 
     }
 
@@ -360,19 +377,43 @@ class Request {
     }
 
     /**
-     * Kullanıcının dil bilgisini verir.
+     * Gelen istekte bulunan değişkenleri verir.
      *
-     * @return string|null
+     * @return array
      */
-    public function getClientLang()
+    public function inputs()
     {
 
-        if ( isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) )
+        if ( $this->isPostRequest() )
         {
-            return substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
+            return $_POST + $_GET;
         }
 
-        return null;
+        return $_GET;
+
+    }
+
+    /**
+     * Gelen istekte bulunan dosyaları verir.
+     *
+     * @return array
+     */
+    public function files()
+    {
+
+        return $_FILES;
+
+    }
+
+    /**
+     * Gelen istekte bulunan tüm değişken ve dosyaları verir.
+     *
+     * @return array
+     */
+    public function all()
+    {
+
+        return $this->inputs() + $this->files();
 
     }
 
@@ -390,35 +431,6 @@ class Request {
     }
 
     /**
-     * Tüm input verilerini çıktılar.
-     *
-     * @return mixed
-     */
-    public function inputSource()
-    {
-
-        if ( $this->isPost() )
-        {
-            return $_POST + $_GET;
-        }
-        else
-        {
-            return $_GET;
-        }
-
-    }
-
-    /**
-     * Form verilerinin tamamını döndürür.
-     *
-     * @return mixed
-     */
-    public function all()
-    {
-        return $this->inputSource();
-    }
-
-    /**
      * Belirtilen form verisi varsa olumlu döner.
      *
      * @param $name
@@ -426,7 +438,9 @@ class Request {
      */
     public function has($name)
     {
-        return array_get($this->inputSource(), $name, false) === false ? false : true;
+
+        return array_get($this->inputs(), $name, false) === false ? false : true;
+
     }
 
     /**
@@ -438,7 +452,9 @@ class Request {
      */
     public function get($name, $default = null)
     {
-        return array_get($this->inputSource(), $name, $default);
+
+        return array_get($this->inputs(), $name, $default);
+
     }
 
     /**
@@ -449,11 +465,13 @@ class Request {
      */
     public function hasOld($name)
     {
+
         return array_get($this->oldInput, $name, false) === false ? false : true;
+
     }
 
     /**
-     * Önceki sayfadan aktarılan form verisini çıktılar.
+     * Önceki sayfadan aktarılan form verisini verir.
      *
      * @param $name
      * @param null $default
@@ -461,7 +479,9 @@ class Request {
      */
     public function old($name, $default = null)
     {
+
         return array_get($this->oldInput, $name, $default);
+
     }
 
 }

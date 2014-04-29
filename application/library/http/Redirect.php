@@ -402,7 +402,7 @@ class Redirect {
     public function withInput(array $input = array())
     {
 
-        $oldInput = $this->request->inputSource();
+        $oldInput = $this->request->inputs();
 
         if ( $input )
         {
