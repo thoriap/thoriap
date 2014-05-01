@@ -1,7 +1,6 @@
 ## Thoriap
 
 ![License](http://img.shields.io/packagist/l/doctrine/orm.svg)
-
 ![Latest Version](http://img.shields.io/badge/release-beta-blue.svg)
 
-> **Description:** Open Source Content Management System
+- Open Source Content Management System
