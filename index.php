@@ -12,19 +12,19 @@
 
 /*
 |--------------------------------------------------------------------------
-| Çalıştırılmaya Hazırlanıyor
+| Hazırlanıyor.
 |--------------------------------------------------------------------------
 |
 | Sistemin çalışması için gerekli olan dizinler tanımlanır ve
-| gerekli dosyalar dahil edilir. Daha sonra ise sistemin bir kısmı
-| çalıştırılıp kütüphaneler hazırlanır.
+| ilgili dosyalar dahil edilir. Daha sonra ise sistemin bir kısmı
+| çalıştırılıp kütüphaneler çağrılmaya hazır hale getirilir..
 |
 */
 $application = require __DIR__.'/bootstrap/application.php';
 
 /*
 |--------------------------------------------------------------------------
-| Çalıştırılıyor
+| Çalıştırılıyor.
 |--------------------------------------------------------------------------
 |
 | Gerekli olan dizin ayarları, dosyalar ve kütüphaneler hazırlandığına
