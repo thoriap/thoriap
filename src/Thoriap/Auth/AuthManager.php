@@ -12,8 +12,8 @@
 namespace Thoriap\Auth;
 
 use stdClass;
-use Thoriap\Alias\Model\Users;
-use Thoriap\Alias\Model\Groups;
+use Thoriap\Alias\Models\Users;
+use Thoriap\Alias\Models\Groups;
 use Thoriap\Session\Store as Session;
 
 class AuthManager {

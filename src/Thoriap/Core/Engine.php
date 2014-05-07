@@ -22,24 +22,11 @@ use RouteManager;
 
 use Thoriap\View\View;
 use Thoriap\Container\Container;
-use Thoriap\Alias\Model\Plugins;
-use Thoriap\Alias\Model\Languages;
+use Thoriap\Alias\Models\Extensions;
+use Thoriap\Alias\Models\Templates;
+use Thoriap\Alias\Models\Languages;
 
 class Engine {
-
-    /**
-     * Sorgu bilgisini tutar.
-     *
-     * @var
-     */
-    private $query;
-
-    /**
-     * Rota bilgisini tutar.
-     *
-     * @var
-     */
-    private $route;
 
     /**
      * Config'i tutar.
@@ -47,6 +34,13 @@ class Engine {
      * @var Config
      */
     private $config;
+
+    /**
+     * Request'i tutar.
+     *
+     * @var Request
+     */
+    private $request;
 
     /**
      * Registry'i tutar.
@@ -63,36 +57,6 @@ class Engine {
     private $container;
 
     /**
-     * Dil bilgisini tanımlar.
-     *
-     * @return mixed
-     */
-    private function setLanguages()
-    {
-
-        if ( !Session::getLanguages() )
-        {
-
-            $clientLang = Request::getClientLang();
-
-            $defaultLang = Languages::getDefault();
-
-            if ( $clientLang === null || !$activeLang = Languages::getByAlias($clientLang) )
-            {
-                Session::setLanguages($defaultLang->lang_alias, $defaultLang->lang_alias);
-            }
-            else
-            {
-                Session::setLanguages($activeLang->lang_alias, $defaultLang->lang_alias);
-            }
-
-        }
-
-        $this->registry->setLanguages(Session::getLanguages());
-
-    }
-
-    /**
      * Başlangıç işlemleri.
      *
      * @param Container $container
@@ -107,20 +71,23 @@ class Engine {
         // Config'i tanımlayalım.
         $this->config = $container['config'];
 
+        // Request'i tanımlayalım.
+        $this->request = $container['request'];
+
         // Registry'i tanımlayalım.
         $this->registry = $container['registry'];
-
-        // Dil bilgisini tanımlayalım.
-        $this->setLanguages();
 
         // Rotayı hazırlayalım.
         $this->prepareRoute();
 
-        // Eklentileri yükleyelim.
-        $this->installPlugins();
+        // Eklentileri hazırlayalım.
+        $this->prepareExtensions();
+
+        // Şablonları hazırlayalım.
+        $this->prepareTemplates();
 
         // Yönetim panelinde miyiz?
-        if ( Route::administrator() )
+        if ( $this->registry->isAdministrator() )
         {
             $result = $this->startBackEnd();
         }
@@ -140,6 +107,38 @@ class Engine {
     }
 
     /**
+     * Dil bilgisini tanımlar.
+     *
+     * @return mixed
+     */
+    private function setLanguages()
+    {
+
+        if ( !Session::getLanguages() )
+        {
+
+            $clientLang = Request::getClientLang();
+
+            $defaultLang = Languages::getDefault();
+
+            if ( $clientLang === null || !$activeLang = Languages::getByCode($clientLang) )
+            {
+                Session::setLanguages($defaultLang->lang_code, $defaultLang->lang_code);
+            }
+            else
+            {
+                Session::setLanguages($activeLang->lang_code, $defaultLang->lang_code);
+            }
+
+        }
+
+        $languages = Session::getLanguages();
+
+        $this->registry->setLanguages($languages['active'], $languages['default']);
+
+    }
+
+    /**
      * Rota bilgilerini hazırlar.
      *
      * @return mixed
@@ -147,112 +146,125 @@ class Engine {
     private function prepareRoute()
     {
 
-        // Tüm dilleri veritabanından alalım.
-        $allLanguages = Languages::getActiveAll();
+        // Rotayı talep edelim.
+        $route = $this->request->route();
 
-        // Varsayılan dili de alıp tanımlayalım.
-        Config::set('route.language.default', Languages::getDefault());
+        // Sorguyu talep edelim.
+        $query = $this->request->query();
 
-        // Tüm dilleri döndür.
-        foreach ($allLanguages as $language)
-        {
-            // Sistemdeki dil havuzuna ekle. Sonra kullanacağız.
-            Config::set('application.languages.'.$language->lang_code, $language);
-        }
-
-        // Rotayı ver.
-        $routes = Request::route();
-
-        // Sorguyu ver.
-        $query = Request::query();
+        // Varsayılan dili talep edelim.
+        $default = Languages::getDefault();
 
         // Rota var mı ?
-        if ( $routes )
+        if ( count($route) )
         {
 
-            // İlk parametreyi alalım o zaman kontrol edicez.
-            $first_route = array_shift($routes);
+            // Birinci parametreyi alıyoruz.
+            $first_route = array_shift($route);
 
-            // İlk parametre yönetim panelini mi işaret ediyor?
-            if ( $first_route == Config::get('application.administrator_directory') )
+            // Birinci parametre yönetim panelini mi işaret ediyor?
+            if ( $first_route == $this->config->get('application.administrator_directory') )
             {
-                // Evet yönetim panelindeyiz.
-                Config::set('route.administrator', true);
+
+                // Evet, kayıt defterine bildirelim.
+                $this->registry->setAdministrator();
+
+                // Dili ayarlayalım.
+                $this->setLanguages();
+
             }
 
-            // Hayır, ön tarafdaymışız.
+            // Hayır, işaret etmiyor.
             else
             {
 
-                // Yönetim panelinde değiliz, yanlış alarm.
-                Config::set('route.administrator', false);
-
-                // Çoklu dil ayarımız aktif mi?
-                if (Config::get('application.multiple_languages') == true)
+                // Çoklu dil kullanımı aktif mi?
+                if ( $this->config->get('application.multiple_languages') === true )
                 {
 
-                    // Döndür bakalım dilleri, hangisiymiş bulalım.
-                    foreach($allLanguages as $language)
+                    // Dil olarak arayalım.
+                    $language = Languages::getByAlias($first_route);
+
+                    // Bulundu mu?
+                    if ( $language )
                     {
-
-                        // Gelen dil bu mu yoksa?
-                        if ( $language->lang_alias == $first_route )
+                        // Zaten varsayılan dil mi?
+                        if ( $language->lang_default )
                         {
-
-                            // Aktif dili de tanımlayalım.
-                            Config::set('route.language.active', $language);
-
-                            // Gelen dil zaten varsayılan dil mi?
-                            if ( $language->lang_default )
-                            {
-                                // Böyle iş olmaz, yönlendir bizi.
-                                return Redirect::to($routes)->withParams($query);
-                            }
-
-                            // Bırak bu işi bırak sen yapma.
-                            break;
-
+                            // O zaman yönlendirilsin, çünkü varsayılan dil.
+                            return Redirect::to($route)->withParams($query);
                         }
 
+                        // Değilmiş.
+                        else
+                        {
+                            // Kayıt defterinde belirtelim.
+                            $this->registry->setLanguages($language->lang_code, $default->lang_code);
+                        }
                     }
 
-                    // Aktif olan dili bulamadık mı?
-                    if (!Config::get('route.language.active'))
+                    // Dil değil sanırız.
+                    else
                     {
-                        // O zaman o dil değildir!
-                        array_unshift($routes, $first_route);
+                        // Birinci parametreyi geri veriyoruz.
+                        array_unshift($route, $first_route);
                     }
 
                 }
-            }
-        }
 
-        // Çoklu dil kullanımı kapalı ya da varsayılan dilimiz bulunamadı mı?
-        if ( Config::get('application.language') == false || !Config::get('route.language.active') )
-        {
-            // Yetiştim! Varsayılan dili tanımla.
-            Config::set('route.language.active', Config::get('route.language.default'));
+                // Çoklu dil kullanımı deaktif ya da aktif dil bulunamadı mı?
+                if ( $this->config->get('application.language') === false
+                    || $this->registry->getActiveLanguage() === null )
+                {
+                    $this->registry->setLanguages($default->lang_code, $default->lang_code);
+
+                }
+
+            }
+
         }
 
         // Rota boş mu?
-        if ( !$routes )
+        if ( !count($route) )
         {
-            // Ana sayfadayız o zaman.
-            Config::set('route.index', true);
-        }
-        else
-        {
-            // Ana sayfada değilmişiz.
-            Config::set('route.index', false);
+            $this->registry->setIndex();
         }
 
-        // Kendimiz için.
-        $this->query = $query;
-        $this->route = $routes;
+        // Tanımlamalar.
+        $this->registry->setRouteState($route);
+        $this->registry->setRouteQuery($query);
 
-        // Genel ayarlar için.
-        Config::set('route.state', $routes);
-        Config::set('route.query', $query);
+    }
+
+    /**
+     * Şablonları güncelleştirir ve tanımlar.
+     *
+     * @return mixed
+     */
+    private function prepareTemplates()
+    {
+
+        // Şablonları getir.
+        $templates = $this->refreshTemplates();
+
+        // Bulunan şablonları döndürelim.
+        foreach($templates as $alias=>$information)
+        {
+
+            // Kayıt defterine bildirelim.
+            $this->registry->setTemplate($alias, $information);
+
+            // Veritabanından bilgilerini getir.
+            $template = Templates::getOneByName($alias);
+
+            // Bu aradığımız ve aktif olan sanırım.
+            if (isset($template->template_active) && $template->template_active == 1)
+            {
+                // Aktif tema olarak bildiriyoruz.
+                $this->registry->setActiveTemplate($alias);
+            }
+
+        }
 
     }
 
@@ -261,34 +273,34 @@ class Engine {
      *
      * @return mixed
      */
-    private function installPlugins()
+    private function prepareExtensions()
     {
 
         // Yüklü eklentiler.
         $installed = array();
 
-        // Eklentileri dizinden getir.
-        $allDirectory = $this->refreshPlugins();
+        // Dizindeki eklentiler.
+        $allDirectory = $this->refreshExtensions();
 
-        // Eklentileri veritabanından getir.
-        $allDatabase = Plugins::getAll();
+        // Veritabanındaki eklentiler.
+        $allDatabase = Extensions::getAll();
 
-        // Veritabanındaki eklentileri döndür.
-        foreach($allDatabase as &$plugin)
+        // Veritabanındaki eklentileri döndürelim.
+        foreach($allDatabase as &$extension)
         {
 
             // Eklenti adını kısa hale getirelim.
-            $pluginName = $plugin->plugin_name;
+            $extensionName = $extension->extension_name;
 
             // Veritabanında var olan eklenti hala kullanılabilir durumda mı ?
-            if ( isset($allDirectory[$pluginName]) )
+            if ( isset($allDirectory[$extensionName]) )
             {
 
                 // Dosyalarını birleştirelim.
-                $plugin->files = $allDirectory[$pluginName];
+                $extension->files = $allDirectory[$extensionName];
 
                 // Yüklü eklentilere ekleyelim.
-                $installed[$pluginName] = $plugin;
+                $installed[$extensionName] = $extension;
 
             }
 
@@ -298,18 +310,18 @@ class Engine {
         $callable = array();
 
         // Gelsin bakalım bulduğumuz eklentiler.
-        foreach($installed as $plugin)
+        foreach($installed as $extension)
         {
 
             // Sistemdeki tüm eklentilere ekleyelim bunu.
-            $this->registry->setExtension($plugin->plugin_name, $plugin->files);
+            $this->registry->setExtension($extension->extension_name, $extension->files);
 
             // Bu aktifleştirilenlerden sanırım.
-            if ( isset($plugin->plugin_active) && $plugin->plugin_active == 1 )
+            if ( isset($extension->extension_active) && $extension->extension_active == 1 )
             {
 
                 // Çalıştırılabilir olan eklentilere ekleyelim.
-                $callable[] = $plugin->plugin_name;
+                $callable[] = $extension->extension_name;
 
             }
 
@@ -318,197 +330,239 @@ class Engine {
         // Gerekli olan bileşenleri çağıralım.
         foreach($callable as $alias)
         {
-            $this->startPlugin(array($alias, 'routes'), 'init');
+            $this->startExtension($alias, 'Routes', 'init');
         }
 
         // Yönetim paneli mi görüntüleniyor?
-        if ( Route::administrator() )
+        if ( $this->registry->isAdministrator() )
         {
             // Gerekli olan bileşenleri çağıralım.
             foreach($callable as $alias)
             {
-                $this->startPlugin(array($alias, array('permissions', 'navigation')), 'init');
+                $this->startExtension($alias, array('Permissions', 'Navigation'), 'init');
             }
         }
 
     }
 
     /**
-     * Eklentileri yeniler ve çıktı verir.
+     * Eklentileri yeniler ve sonuç döndürür.
      *
      * @return array
      */
-    private function refreshPlugins()
+    private function refreshExtensions()
     {
 
         // Dizinden eklentileri oku.
-        $plugins = $this->getPlugins();
+        $extensions = $this->getExtensions();
 
-        // Bakalım eklentiler yeteri kadar güncel mi?
-        foreach ($plugins as $name=>$value)
+        // Eklentiler yeteri kadar güncel mi?
+        foreach ($extensions as $name=>$value)
         {
             // Bu eklentiden uygulamanın haberi yok galiba?
-            if (!Plugins::getOneByName($name))
+            if (!Extensions::getOneByName($name))
             {
                 // Al bunu ekle bakalım dost da düşman da görsün.
-                Plugins::insert(array('plugin_name' => $name));
+                Extensions::insert(array('extension_name' => $name));
             }
         }
 
-        return $plugins;
+        return $extensions;
 
     }
 
     /**
-     * Dizindeki kullanılabilir eklentileri verir.
+     * Eklenti dizinini kontrol eder ve sonuç döndürür.
      *
      * @return array
      */
-    private function getPlugins()
+    private function getExtensions()
     {
 
-        $plugins = array();
+        // Eklentileri tutacak.
+        $extensions = array();
 
-        // Dizine bakalım kimler varmış?
-        foreach ( glob(PLUGIN_PATH.'/*', GLOB_ONLYDIR) as $plugin )
+        // Eklenti dizini kontrol ediliyor.
+        foreach ( glob(EXTENSION_PATH.'/*', GLOB_ONLYDIR) as $directory )
         {
 
-            // Eklentinin adını tanımlayalım.
-            $pluginName = basename($plugin);
+            // Eklentinin adı tanımlanıyor.
+            $extension = basename($directory);
 
-            // Standartlarımıza uyuyor mu?
-            if (ctype_lower($pluginName))
+            // Standartlara uygun bir eklenti mi?
+            if (preg_match('/^[A-Z][a-z]+/', $extension))
             {
 
-                // Gerekli olan dosyaları belirtelim.
+                // Hayati önem taşıyan dosyalar.
                 $files = (object) array(
-                    'directory' => $plugin,
-                    'configuration' => $plugin.'/configuration.ini',
-                    'administrator' => $plugin.'/administrator.php',
-                    'interface' => $plugin.'/interface.php',
-                    'navigation' => $plugin.'/external/navigation.php',
-                    'permissions' => $plugin.'/external/permissions.php',
-                    'widget' => $plugin.'/external/widget.php',
-                    'routes' => $plugin.'/external/routes.php',
+                    'directory' => $directory,
+                    'configuration' => $directory.'/Configuration.xml',
+                    'navigation' => $directory.'/Navigation.php',
+                    'permissions' => $directory.'/Permissions.php',
+                    'routes' => $directory.'/Routes.php',
+                    'widget' => $directory.'/Widget.php',
                 );
 
-                // Dosyaların varlığını sınayalım.
-                if ( is_readable($files->configuration) &&
-                    ( is_readable($files->administrator) || is_readable($files->interface) )
-                )
+                // Yapılandırma dosyası okunabilir mi?.
+                if ( is_readable($files->configuration) )
                 {
-
-                    // Bu eklenti candır, ekle bunu.
-                    $plugins[$pluginName] = $files;
-
+                    $extensions[$extension] = $files;
                 }
 
             }
 
         }
 
-        return $plugins;
+        // Bulunan eklentiler döndürülüyor.
+        return $extensions;
 
     }
 
     /**
-     * Belirtilen eklentiyi çalıştırır.
-     * Method belirtilirse onu da çalıştırır.
+     * Şablonları yeniler ve sonuç döndürür.
      *
-     * @param array $parameters
-     * @param null $method
-     * @param array $arguments
-     * @return mixed
+     * @return array
      */
-    private function startPlugin(array $parameters, $method = null, array $arguments = array()) {
+    private function refreshTemplates()
+    {
 
-        // Kısa isimler oluşturuluyor
-        list($alias, $type) = $parameters;
+        // Dizindeki şablonları oku.
+        $templates = $this->getTemplates();
 
-        // Birden fazla çağrım varsa.
-        if ( is_array($type) )
+        // Temalar yeteri kadar güncel mi?
+        foreach ($templates as $name=>$value)
         {
-            // Döndürelim.
-            foreach($type as $single)
+            // Bu şablondan uygulamanın haberi yok galiba?
+            if ( !Templates::getOneByName($name) )
             {
-                // Tek tek çalıştıralım.
-                $this->startPlugin(array($alias, $single), $method, $arguments);
+                // Al bunu da ekle, haberin olsun.
+                Templates::insert(array('template_name' => $name));
             }
-            // Çıktının bir önemi kalmadı.
-            return null;
         }
 
-        // Eklentinin bilgileri talep ediliyor.
-        $extension = $this->registry->getExtension($alias);
+        return $templates;
 
-        // Bilgileri alırken bir sorun oluşmadıysa.
-        if ( $extension !== false )
+    }
+
+    /**
+     * Şablon dizinini kontrol eder ve sonuç döndürür.
+     *
+     * @return array
+     */
+    private function getTemplates()
+    {
+
+        // Şablonları tutacak.
+        $templates = array();
+
+        // Şablon dizini kontrol ediliyor.
+        foreach ( glob(TEMPLATE_PATH . '/interface/*', GLOB_ONLYDIR) as $directory )
         {
+            // Şablonun adı tanımlanıyor.
+            $template = basename($directory);
 
-            // Eklenti dosyası var ve okunabilir mi?
-            if ( isset($extension->{$type}) && is_readable($extension->{$type}) )
+            // Standartlara uygun bir şablon mu?
+            if (preg_match('/^[a-z]+/', $template))
             {
 
-                // Dosya dahil edilmemiş mi?
-                if ( !$this->registry->isIncluded($alias, $type) )
+                // Hayati önem taşıyan dosyalar.
+                $files = (object) array (
+                    'directory' => $directory,
+                    'configuration' => $directory.'/configuration.xml',
+                );
+
+                // Yapılandırma dosyası okunabilir mi?
+                if ( is_readable($files->configuration) )
                 {
-
-                    // Dahil edelim.
-                    if (require_once($extension->{$type}))
-                    {
-                        $this->registry->setIncluded($alias, $type);
-                    }
-
+                    $templates[$template] = $files;
                 }
+            }
+        }
 
-                // Dosya dahil edilmişse.
-                if ( $this->registry->isIncluded($alias, $type) )
+        // Bulunan şablonlar döndürülüyor.
+        return $templates;
+
+    }
+
+    /**
+     * Eklenti denetçisini çalıştırır.
+     *
+     * @param string $extension
+     * @param string $controller
+     * @param null $method
+     * @param array $arguments
+     * @return bool|mixed
+     */
+    private function startExtension($extension, $controller, $method = null, array $arguments = array())
+    {
+
+        // Birden fazla çağrılan denetçiler.
+        if ( is_array($controller) )
+        {
+            foreach($controller as $expression)
+            {
+                // Denetçiler tek tek çağırılıyor.
+                $this->startExtension($extension, $expression, $method, $arguments);
+            }
+            return false;
+        }
+
+        // Eklentinin bilgileri okunuyor.
+        $getExtension = $this->registry->getExtension($extension);
+
+        // Hata varsa bitiriliyor.
+        if ( $getExtension === false )
+        {
+            return false;
+        }
+
+        // Sınıf ismi tanımlanıyor.
+        $className = $extension.'\\'.$controller;
+
+        // Dosya ismi tanımlanıyor.
+        $fileName = str_replace('\\', '/', $className).'.php';
+
+        // Dosya daha önceden dahil edilmemiş ise.
+        if ( !$this->registry->isIncluded($extension, $fileName) )
+        {
+            if ( require($fileName) )
+            {
+                $this->registry->setIncluded($extension, $fileName);
+            }
+        }
+
+        // Dosya dahil edilmiş ise.
+        if ( $this->registry->isIncluded($extension, $fileName) )
+        {
+            // Sınıf daha önceden dahil edilmemiş ise.
+            if ( !$this->registry->isClass($extension, $className) )
+            {
+                // Sınıfın varlığı sınanıyor.
+                if ( class_exists($className) )
                 {
+                    $attributes = array(
+                        'directory' => $getExtension->directory,
+                        'languages' => $this->registry->getLanguages(),
+                        'configuration' => $this->registry->getExtensionConfiguration($extension),
+                    );
 
-                    // Sınıf ismini oluşturalım.
-                    $className = ucfirst($alias).ucfirst($type);
-
-                    // Sınıf daha önceden tanımlanmamış mı?
-                    if ( !$this->registry->isClass($className) )
-                    {
-
-                        // Aranan sınıf var mı peki?
-                        if ( class_exists($className) )
-                        {
-
-                            // Gerekli olabilecek bilgileri hazırlayalım.
-                            $information = array(
-                                'directory' => $extension->directory,
-                                'languages' => $this->registry->getLanguages(),
-                                'configuration' => $this->registry->getStatement($alias),
-                            );
-
-                            // Sınıfı tanımlayalım artık.
-                            $this->registry->setClass($className, new $className($alias, $information));
-
-                        }
-
-                    }
-
-                    // Sınıf tanımlanmış ve çağrılan bir method varsa.
-                    if ( $this->registry->isClass($className) && $method )
-                    {
-
-                        // Aranan method var ve çağrılabilir mi?
-                        if ( is_callable(array($this->registry->getClass($className), $method)) )
-                        {
-
-                            // Methodu çağıralım.
-                            return call_user_func_array(array($this->registry->getClass($className), $method), $arguments);
-
-                        }
-
-                    }
-
+                    // Sınıf tanımlanıyor.
+                    $this->registry->setClass($className, new $className($extension, $attributes));
                 }
-
             }
 
+            // Sınıf dahil edilmiş ise.
+            if ( $this->registry->isClass($className) && $method )
+            {
+                // Sınıf çağırılıyor.
+                $getClass = $this->registry->getClass($className);
+
+                // Yöntem çağrılabilir mi?
+                if ( is_callable(array($getClass, $method)) )
+                {
+                    return call_user_func_array(array($getClass, $method), $arguments);
+                }
+            }
         }
 
     }
@@ -523,7 +577,7 @@ class Engine {
     {
 
         // Desenimizi hazırlayalım.
-        preg_match('@^'.$pattern.'$@is', '/'.implode('/', $this->route), $matches);
+        preg_match('@^'.$pattern.'$@is', '/'.$this->registry->getRouteString(), $matches);
 
         // Eşleşme var mı?
         if ( $matches )
@@ -547,6 +601,25 @@ class Engine {
 
         // Tanımlanmış rotaları alalım.
         $routes = RouteManager::all(Request::getMethod());
+
+
+        /*
+        $template = $this->registry->getTemplateConfiguration('default');
+
+        echo '<pre>';
+        print_r($template); exit;
+        */
+
+
+        //@todo selam
+        //echo '<pre>';
+        //print_r($this->config->all()); exit;
+        //print_r($this->registry); exit;
+
+        //@todo selam
+        //var_dump($routes); exit;
+
+
 
         // Rota grubumuz dönsün.
         foreach($routes as $route)
@@ -587,9 +660,14 @@ class Engine {
                     // Belirtilen eklentiye odaklanalım.
                     else
                     {
-                        // Eklentiyi çağırıyoruz.
-                        list($alias, $method) = explode('@', $expressions->callback);
-                        return $this->startPlugin(array($alias, 'administrator'), $method, $result);
+                        // Eklenti ve argümanlar tanımlanıyor.
+                        list($extension, $arguments) = explode('::', $expressions->callback);
+
+                        // Denetçi ve yöntem tanımlanıyor.
+                        list($controller, $method) = explode('@', $arguments);
+
+                        // Eklenti ve denetçisi çağırılıyor.
+                        return $this->startExtension($extension, $controller, $method, $result);
                     }
 
                 }

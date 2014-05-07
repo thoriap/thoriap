@@ -1,0 +1,26 @@
+<configuration>
+    <general>
+        <name>Default Template</name>
+        <description>Application's default template.</description>
+        <language>en</language>
+        <version>1.0.0</version>
+        <translations>
+            <tr>
+                <name>Varsayılan Şablon</name>
+                <description>Uygulamanın varsayılan şablonu.</description>
+            </tr>
+        </translations>
+    </general>
+    <creator>
+        <author>Yalçın CEYLAN</author>
+        <url>http://www.yalcinceylan.net</url>
+    </creator>
+    <sections>
+        <navigation>
+            <title>Navigasyon</title>
+        </navigation>
+        <categories>
+            <title>Kategoriler</title>
+        </categories>
+    </sections>
+</configuration>

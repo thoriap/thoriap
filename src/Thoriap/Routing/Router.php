@@ -86,9 +86,9 @@ class Router {
 
         $address = $this->generateRegexPattern($route, $attributes['patterns']);
 
-        if ( is_string($callback) && strpos('@', $callback) === false )
+        if ( is_string($callback) && strpos('::', $callback) === false )
         {
-            $callback = $attributes['external']['extension'].'@'.$callback;
+            $callback = $attributes['external']['extension'].'::'.$callback;
         }
 
         $this->routes[$method][$address] = (object) array(

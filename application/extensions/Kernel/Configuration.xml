@@ -1,0 +1,18 @@
+<configuration>
+    <general>
+        <name>Kernel Manager</name>
+        <description>Kernel Features of Hosting.</description>
+        <language>en</language>
+        <version>1.0.0</version>
+        <translations>
+            <tr>
+                <name>Çekirdek Yöneticisi</name>
+                <description>Çekirdek Özelliklerini Barındırır.</description>
+            </tr>
+        </translations>
+    </general>
+    <creator>
+        <author>Yalçın CEYLAN</author>
+        <url>http://www.yalcinceylan.net</url>
+    </creator>
+</configuration>

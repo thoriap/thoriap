@@ -75,26 +75,24 @@ class Store {
     /**
      * Dil ile ilgili bilgileri saklar.
      *
-     * @param $active
-     * @param $default
+     * @param string $active
+     * @param string $default
      * @return void
      */
     public function setLanguages($active, $default)
     {
-        $this->set('language.active', $active);
-
-        $this->set('language.default', $default);
+        $this->set('languages', array('active' => $active, 'default' => $default));
     }
 
     /**
      * Aktif dil bilgisi tanımlar.
      *
-     * @param $alias
+     * @param string $active
      * @return void
      */
-    public function setActiveLanguage($alias)
+    public function setActiveLanguage($active)
     {
-        $this->set('language.active', $alias);
+        $this->set('languages.active', $active);
     }
 
     /**
@@ -104,7 +102,7 @@ class Store {
      */
     public function getLanguages()
     {
-        return $this->get('language');
+        return $this->get('languages', array());
     }
 
     /**

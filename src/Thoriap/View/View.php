@@ -272,7 +272,7 @@ class View {
      */
     private function template($fileName, $themeName = null) {
 
-        $path = THEME_PATH.'/administrator/'.$fileName;
+        $path = TEMPLATE_PATH.'/administrator/'.$fileName;
 
         $extensions = array('.thor', '.php');
 

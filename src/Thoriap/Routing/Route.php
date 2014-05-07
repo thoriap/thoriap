@@ -11,103 +11,85 @@
 
 namespace Thoriap\Routing;
 
-use Thoriap\Config\Repository;
+use Thoriap\Registry\Registry;
 
 class Route {
 
     /**
-     * Repository'ı tutar.
+     * Registry'i tutar.
      *
-     * @var Repository
+     * @var Registry
      */
-    protected $config;
+    protected $registry;
 
     /**
      * Başlangıç işlemleri.
      *
-     * @param Repository $config
+     * @param Registry $registry
      */
-    public function __construct(Repository $config)
+    public function __construct(Registry $registry)
     {
-
-        $this->config = $config;
-
+        $this->registry = $registry;
     }
 
     /**
-     * Aktif olan dilin istenen alanını ya da tamamını döndürür.
+     * Anasayfa aktif mi?
      *
-     * @param null $field
-     * @return mixed
+     * @return bool
      */
-    public function activeLanguage($field = null) {
+    public function index()
+    {
+        return $this->registry->isIndex();
+    }
 
-        $activeLanguage = $this->config->get('route.language.active');
+    /**
+     * Yönetim Paneli aktif mi?
+     *
+     * @return bool
+     */
+    public function administrator()
+    {
+        return $this->registry->isAdministrator();
+    }
 
-        if ( !is_null($field) )
-        {
-            return isset($activeLanguage[$field]) ? $activeLanguage[$field] : null;
-        }
-        else
-        {
-            return $activeLanguage;
-        }
+    /**
+     * Aktif rotayı dizi şeklinde döndürür.
+     *
+     * @return array
+     */
+    public function state()
+    {
+        return $this->registry->getRouteState();
+    }
 
+    /**
+     * Rotadaki sorguyu dizi şeklinde döndürür.
+     *
+     * @return array
+     */
+    public function query()
+    {
+        return $this->registry->getRouteString();
+    }
+
+    /**
+     * Aktif rotayı dizge şeklinde döndürür.
+     *
+     * @return string
+     */
+    public function current()
+    {
+        return $this->registry->getRouteString();
     }
 
     /**
      * Aktif olan dil kodunu döndürür.
      *
-     * @return mixed
+     * @return string
      */
-    public function language() {
-
-        return $this->config->get('route.language.active.lang_code', null);
-
-    }
-
-    /**
-     * Kullanıcı yönetim panelinde mi?
-     *
-     * @return mixed
-     */
-    public function administrator() {
-
-        return $this->config->get('route.administrator', false);
-
-    }
-
-    /**
-     * Kullanıcı anasayfa da mı?
-     *
-     * @return mixed
-     */
-    public function index() {
-
-        return $this->config->get('route.index', false);
-
-    }
-
-    /**
-     * Aktif rotayı döndürür.
-     *
-     * @return mixed
-     */
-    public function state() {
-
-        return $this->config->get('route.state', null);
-
-    }
-
-    /**
-     * Rotadaki sorguyu döndürür.
-     *
-     * @return mixed
-     */
-    public function query() {
-
-        return $this->config->get('route.query', null);
-
+    public function language()
+    {
+        return $this->registry->getActiveLanguage();
     }
 
 }

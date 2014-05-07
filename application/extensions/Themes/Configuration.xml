@@ -1,0 +1,18 @@
+<configuration>
+    <general>
+        <name>Theme Manager</name>
+        <description>Themes Allows You to Manage.</description>
+        <language>en</language>
+        <version>1.0.0</version>
+        <translations>
+            <tr>
+                <name>Tema Yöneticisi</name>
+                <description>Temaları Yönetmenizi Sağlar.</description>
+            </tr>
+        </translations>
+    </general>
+    <creator>
+        <author>Yalçın CEYLAN</author>
+        <url>http://www.yalcinceylan.net</url>
+    </creator>
+</configuration>

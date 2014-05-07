@@ -186,12 +186,14 @@ abstract class Database {
      * Sorgu çalıştırır.
      *
      * @param $query
-     * @param array $options
+     * @param $options
      * @param bool $execute
      * @return PDOStatement
      */
-    public function query($query, array $options = array(), $execute = true)
+    public function query($query, $options = array(), $execute = true)
     {
+        $options = (array) $options;
+
         $statement = $this->adapter->prepare($query);
 
         if ($execute)
@@ -206,11 +208,11 @@ abstract class Database {
      * Bir satırlık veri getirir.
      *
      * @param $query
-     * @param array $options
+     * @param $options
      * @param int $style
      * @return mixed
      */
-    public function fetch($query, array $options = array(), $style = PDO::FETCH_OBJ)
+    public function fetch($query, $options = array(), $style = PDO::FETCH_OBJ)
     {
         return $this->query($query, $options)->fetch($style);
     }
@@ -219,11 +221,11 @@ abstract class Database {
      * Birden fazla satır veri getirir.
      *
      * @param $query
-     * @param array $options
+     * @param $options
      * @param int $style
      * @return array
      */
-    public function fetchAll($query, array $options = array(), $style = PDO::FETCH_OBJ)
+    public function fetchAll($query, $options = array(), $style = PDO::FETCH_OBJ)
     {
         return $this->query($query, $options)->fetchAll($style);
     }
@@ -232,10 +234,10 @@ abstract class Database {
      * Tek bir alan getirir.
      *
      * @param $query
-     * @param array $options
+     * @param $options
      * @return string
      */
-    public function fetchColumn($query, array $options = array())
+    public function fetchColumn($query, $options = array())
     {
         return $this->query($query, $options)->fetchColumn();
     }

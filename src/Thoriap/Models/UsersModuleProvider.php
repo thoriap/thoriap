@@ -9,11 +9,11 @@
  * file that was distributed with this source code.
  */
 
-namespace Thoriap\Routing;
+namespace Thoriap\Models;
 
 use Thoriap\Support\ModuleProvider;
 
-class RoutingModuleProvider extends ModuleProvider {
+class UsersModuleProvider extends ModuleProvider {
 
     /**
      * Üretilecek modüller.
@@ -23,7 +23,7 @@ class RoutingModuleProvider extends ModuleProvider {
     public function modules()
     {
 
-        return array('url', 'route', 'router');
+        return array('model.groups', 'model.users');
 
     }
 
@@ -35,21 +35,15 @@ class RoutingModuleProvider extends ModuleProvider {
     public function register()
     {
 
-        $this->container->bind('router', function(){
+        $this->container->bind('model.groups', function($container){
 
-            return new Router();
-
-        });
-
-        $this->container->bind('route', function($container){
-
-            return new Route($container['registry']);
+            return new Groups($container['adapter']);
 
         });
 
-        $this->container->bind('url', function($container){
+        $this->container->bind('model.users', function($container){
 
-            return new UrlGenerator($container['request'], $container['config'], $container['router']);
+            return new Users($container['adapter']);
 
         });
 

@@ -96,4 +96,14 @@ class Repository {
 
     }
 
+    /**
+     * Tüm ayarları döndürür.
+     *
+     * @return array
+     */
+    public function all()
+    {
+        return $this->settings;
+    }
+
 }

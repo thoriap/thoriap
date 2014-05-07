@@ -23,6 +23,41 @@ class Registry {
     private $route = array();
 
     /**
+     * Ana sayfa aktif mi?
+     *
+     * @var bool
+     */
+    private $index = false;
+
+    /**
+     * Yönetim paneli aktif mi?
+     *
+     * @var bool
+     */
+    private $administrator = false;
+
+    /**
+     * Dil bilgilerini tutar.
+     *
+     * @var array
+     */
+    private $languages = array();
+
+    /**
+     * Kullanılan şablon ismini saklar.
+     *
+     * @var null
+     */
+    private $template = null;
+
+    /**
+     * Şablonların dosya bilgilerini saklar.
+     *
+     * @var array
+     */
+    private $templates = array();
+
+    /**
      * Eklentilerin dosya bilgilerini saklar.
      *
      * @var array
@@ -44,18 +79,62 @@ class Registry {
     private $included = array();
 
     /**
-     * Eklentilerin yapılandırma bilgilerini saklar.
+     * Yapılandırma bilgilerini saklar.
      *
      * @var array
      */
-    private $statements = array();
+    private $configurations = array(
+        'extensions' => array(),
+        'templates' => array(),
+    );
 
     /**
-     * Dil bilgilerini tutar.
+     * Şablon bilgisi tanımlar.
      *
-     * @var array
+     * @param string $alias
+     * @param array $information
      */
-    private $languages = array();
+    public function setTemplate($alias, $information)
+    {
+        $this->templates[$alias] = $information;
+    }
+
+    /**
+     * Şablon bilgisi getirir.
+     *
+     * @param string $alias
+     * @return array|bool
+     */
+    public function getTemplate($alias)
+    {
+        if ( isset($this->templates[$alias]) )
+        {
+            return $this->templates[$alias];
+        }
+
+        return false;
+    }
+
+    /**
+     * Aktif olan şablonu tanımlar.
+     *
+     * @param string $alias
+     * @return void
+     */
+    public function setActiveTemplate($alias)
+    {
+        $this->template = $alias;
+    }
+
+    /**
+     * Aktif Şablon ismini döndürür.
+     *
+     * @return string
+     */
+    public function getActiveTemplate()
+    {
+        return $this->template;
+    }
 
     /**
      * Eklenti bilgisi tanımlar.
@@ -65,9 +144,7 @@ class Registry {
      */
     public function setExtension($alias, $information)
     {
-
         $this->extensions[$alias] = $information;
-
     }
 
     /**
@@ -78,54 +155,48 @@ class Registry {
      */
     public function getExtension($alias)
     {
-
         if ( isset($this->extensions[$alias]) )
         {
             return $this->extensions[$alias];
         }
 
         return false;
-
     }
 
     /**
      * Dahil edilmiş dosya tanımlar.
      *
-     * @param $alias
-     * @param $type
+     * @param string $extension
+     * @param string $fileName
+     * @return void
      */
-    public function setIncluded($alias, $type)
+    public function setIncluded($extension, $fileName)
     {
-
-        $this->included[$alias][$type] = true;
-
+        $this->included[$extension][$fileName] = true;
     }
 
     /**
      * Belirtilen dosya dahil edilmiş mi?
      *
-     * @param $alias
-     * @param $type
+     * @param string $extension
+     * @param string $fileName
      * @return bool
      */
-    public function isIncluded($alias, $type)
+    public function isIncluded($extension, $fileName)
     {
-
-        return isset($this->included[$alias][$type]);
-
+        return isset($this->included[$extension][$fileName]);
     }
 
     /**
      * Sınıf tanımlar.
      *
-     * @param $className
-     * @param $value
+     * @param string $className
+     * @param object $value
+     * @return void
      */
-    public function setClass($className, $value)
+    public function setClass($className, $class)
     {
-
-        $this->classlist[$className] = $value;
-
+        $this->classlist[$className] = $class;
     }
 
     /**
@@ -136,9 +207,7 @@ class Registry {
      */
     public function isClass($className)
     {
-
         return isset($this->classlist[$className]);
-
     }
 
     /**
@@ -149,27 +218,26 @@ class Registry {
      */
     public function getClass($className)
     {
-
         if ( isset($this->classlist[$className]) )
         {
             return $this->classlist[$className];
         }
 
         return false;
-
     }
 
     /**
      * Belirtilen dil bilgilerini kaydeder.
      *
      * @param array $languages
-     * @return mixed
+     * @return void
      */
-    public function setLanguages(array $languages)
+    public function setLanguages($active, $default)
     {
-
-        $this->languages = $languages;
-
+        $this->languages = array(
+            'active' => $active,
+            'default' => $default,
+        );
     }
 
     /**
@@ -179,9 +247,7 @@ class Registry {
      */
     public function getLanguages()
     {
-
         return $this->languages;
-
     }
 
     /**
@@ -189,11 +255,9 @@ class Registry {
      *
      * @return mixed
      */
-    public function getActiveLang()
+    public function getActiveLanguage()
     {
-
-        return $this->languages['active'];
-
+        return isset($this->languages['active']) ? $this->languages['active'] : null;
     }
 
     /**
@@ -201,74 +265,129 @@ class Registry {
      *
      * @return mixed
      */
-    public function getDefaultLang()
+    public function getDefaultLanguage()
     {
-
-        return $this->languages['default'];
-
+        return isset($this->languages['default']) ? $this->languages['default'] : null;
     }
 
     /**
-     * İstenilen eklentinin bilgilerini getirir.
-     * Bilgiler yoksa okur, daha sonra oradan alır.
+     * Belirtilen eklentinin yapılandırma dosyasını döndürür.
      *
-     * @param $alias
-     * @return object
+     * @param string $alias
+     * @return bool|object
      */
-    public function getStatement($alias)
+    public function getExtensionConfiguration($alias)
     {
-
-        if ( isset($this->statements[$alias]) )
-        {
-            return $this->statements[$alias];
-        }
-
-        $result = new stdClass();
-
         $extension = $this->getExtension($alias);
 
-        $active = $this->getActiveLang();
-
-        $default = $this->getDefaultLang();
-
-        $configuration = parse_ini_file($extension->configuration , true);
-
-        if ( isset($configuration[$active]) )
+        if ( $extension <> false && is_readable($extension->configuration) )
         {
-            $translations = $configuration[$active];
-        }
-        else if ( isset($configuration[$default]) )
-        {
-            $translations = $configuration[$default];
-        }
-        else
-        {
-            $translations = $configuration['default'];
-        }
-
-        foreach($translations as $key=>$value)
-        {
-            $result->{$key} = $value;
-        }
-
-        foreach($configuration['statement'] as $key=>$value)
-        {
-            $result->{$key} = $value;
-        }
-
-        foreach($configuration['creator'] as $key=>$value)
-        {
-
-            if ( !isset($result->creator) )
+            if ( isset($this->configurations['extensions'][$alias]) )
             {
-                $result->creator = new stdClass();
+                return $this->configurations['extensions'][$alias];
             }
 
-            $result->creator->{$key} = $value;
+            return $this->configurations['extensions'][$alias] = $this->getConfiguration($extension->configuration);
         }
 
-        return $this->statements[$alias] = $result;
+        return false;
+    }
 
+    /**
+     * Belirtilen şablonun yapılandırma dosyasını döndürür.
+     *
+     * @param string $alias
+     * @return bool|object
+     */
+    public function getTemplateConfiguration($alias)
+    {
+        $template = $this->getTemplate($alias);
+
+        if ( $template <> false && is_readable($template->configuration) )
+        {
+            if ( isset($this->configurations['templates'][$alias]) )
+            {
+                return $this->configurations['templates'][$alias];
+            }
+
+            return $this->configurations['templates'][$alias] = $this->getConfiguration($template->configuration);
+        }
+
+        return false;
+    }
+
+    /**
+     * Belirtilen yapılandırma dosyasını okur ve sonuç döndürür.
+     *
+     * @param string $configuration
+     * @return object
+     */
+    public function getConfiguration($configuration)
+    {
+        $result = simplexml_load_file($configuration);
+
+        $active = $this->getActiveLanguage();
+
+        $default = $this->getDefaultLanguage();
+
+        if ( isset($result->general->translations) )
+        {
+            if ( $result->general->language <> $active )
+            {
+                if ( isset($result->general->translations->{$active}) && $translations = $result->general->translations->{$active} )
+                {
+                    $list = array('name', 'description');
+
+                    foreach($list as $field)
+                    {
+                        $result->general->{$field} = $translations->{$field};
+                    }
+                }
+            }
+            unset($result->general->translations);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Anasayfa durumunu tanımlar.
+     *
+     * @return void
+     */
+    public function setIndex()
+    {
+        $this->index = true;
+    }
+
+    /**
+     * Anasayfa aktif mi?
+     *
+     * @return bool
+     */
+    public function isIndex()
+    {
+        return $this->index;
+    }
+
+    /**
+     * Yönetim paneli durumunu tanımlar.
+     *
+     * @return void
+     */
+    public function setAdministrator()
+    {
+        $this->administrator = true;
+    }
+
+    /**
+     * Yönetim Paneli aktif mi?
+     *
+     * @return bool
+     */
+    public function isAdministrator()
+    {
+        return $this->administrator;
     }
 
     /**
@@ -278,9 +397,7 @@ class Registry {
      */
     public function setRouteState($routeState)
     {
-
         $this->route['state'] = $routeState;
-
     }
 
     /**
@@ -290,9 +407,7 @@ class Registry {
      */
     public function setRouteQuery($routeQuery)
     {
-
         $this->route['query'] = $routeQuery;
-
     }
 
     /**
@@ -302,9 +417,7 @@ class Registry {
      */
     public function getRouteState()
     {
-
         return $this->route['state'];
-
     }
 
     /**
@@ -314,9 +427,7 @@ class Registry {
      */
     public function getRouteQuery()
     {
-
         return $this->route['query'];
-
     }
 
     /**
@@ -326,9 +437,7 @@ class Registry {
      */
     public function getRouteString()
     {
-
-        return implode('/', $this->route['state']);
-
+        return $this->getRouteState() ? implode('/', $this->getRouteState()) : null;
     }
 
 }

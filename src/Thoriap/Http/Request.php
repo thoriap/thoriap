@@ -82,7 +82,7 @@ class Request {
     public function __construct(Session $session, Registry $registry)
     {
 
-        $this->registry = $registry;
+        //$this->registry = $registry;
 
         $this->session = $session;
 
@@ -92,9 +92,9 @@ class Request {
 
         $this->session->flushOldInput();
 
-        $this->registry->setRouteState($this->route);
+        //$this->registry->setRouteState($this->route);
 
-        $this->registry->setRouteQuery($this->query);
+        //$this->registry->setRouteQuery($this->query);
 
     }
 

@@ -50,6 +50,11 @@ class PermissionBuilder {
             $attributes['parent'] = null;
         }
 
+        if ( !isset($attributes['description']) )
+        {
+            $attributes['description'] = null;
+        }
+
         $this->attributes = $attributes;
 
     }
@@ -107,8 +112,8 @@ class PermissionBuilder {
     {
 
         // Şartlarda sorun yoksa süreci başlatalım.
-        if ( isset($this->attributes['title']) && isset($this->attributes['description'])
-            && isset($this->attributes['permission']) && isset($this->attributes['extension']) )
+        if ( isset($this->attributes['title']) && isset($this->attributes['permission'])
+            && isset($this->attributes['extension']) )
         {
 
             // Evet, işte bu!
