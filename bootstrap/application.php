@@ -21,15 +21,15 @@ define('RESOURCE_PATH', BASE_PATH.'/resources');
 
 define('CONFIG_PATH', APP_PATH.'/config');
 
-define('PLUGIN_PATH', APP_PATH.'/plugins');
+define('EXTENSION_PATH', APP_PATH.'/extensions');
 
-define('THEME_PATH', APP_PATH.'/themes');
+define('TEMPLATE_PATH', APP_PATH.'/templates');
 
 define('STORAGE_PATH', APP_PATH.'/storage');
 
 define('UPLOAD_PATH', RESOURCE_PATH.'/uploads');
 
-set_include_path(get_include_path() . PATH_SEPARATOR . SRC_PATH);
+set_include_path(get_include_path(). PATH_SEPARATOR. SRC_PATH. PATH_SEPARATOR. EXTENSION_PATH);
 
 require __DIR__ . '/additional.php';
 
