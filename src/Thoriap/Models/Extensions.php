@@ -78,7 +78,7 @@ class Extensions extends Database {
      */
     public function getOneByName($extension_name)
     {
-        return $this->fetch("SELECT * FROM `{$this->table}` WHERE `plugin_name` = ?", $extension_name);
+        return $this->fetch("SELECT * FROM `{$this->table}` WHERE `extension_name` = ?", $extension_name);
     }
 
 }
