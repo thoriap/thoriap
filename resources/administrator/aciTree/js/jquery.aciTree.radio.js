@@ -25,7 +25,7 @@
  *
  */
 
-(function($, window, undefined) {
+((($, window, undefined) => {
 
     // extra default options
 
@@ -40,8 +40,8 @@
 
     var aciTree_radio = {
         // init radio
-        _radioInit: function() {
-            this._instance.jQuery.bind('acitree' + this._private.nameSpace, function(event, api, item, eventName, options) {
+        _radioInit() {
+            this._instance.jQuery.bind('acitree' + this._private.nameSpace, (event, api, item, eventName, options) => {
                 switch (eventName) {
                     case 'loaded':
                         if (item) {
@@ -81,7 +81,7 @@
             }));
         },
         // override `_initHook`
-        _initHook: function() {
+        _initHook() {
             if (this.extRadio()) {
                 this._radioInit();
             }
@@ -89,7 +89,7 @@
             this._super();
         },
         // override `_itemHook`
-        _itemHook: function(parent, item, itemData, level) {
+        _itemHook(parent, item, itemData, level) {
             if (this.extRadio()) {
                 // support `checkbox` extension
                 var checkbox = this.extCheckbox && this.hasCheckbox(item);
@@ -103,7 +103,7 @@
         // low level DOM functions
         _radioDOM: {
             // add item radio
-            add: function(item, itemData) {
+            add(item, itemData) {
                 domApi.addClass(item[0], itemData.checked ? ['aciTreeRadio', 'aciTreeChecked'] : 'aciTreeRadio');
                 var text = domApi.childrenByClass(item[0].firstChild, 'aciTreeText');
                 var parent = text.parentNode;
@@ -116,7 +116,7 @@
                 item[0].setAttribute('aria-checked', !!itemData.checked);
             },
             // remove item radio
-            remove: function(item) {
+            remove(item) {
                 domApi.removeClass(item[0], ['aciTreeRadio', 'aciTreeChecked']);
                 var text = domApi.childrenByClass(item[0].firstChild, 'aciTreeText');
                 var label = text.parentNode;
@@ -125,14 +125,14 @@
                 item[0].removeAttribute('aria-checked');
             },
             // (un)check items
-            check: function(items, state) {
-                domApi.toggleListClass(items.toArray(), 'aciTreeChecked', state, function(node) {
+            check(items, state) {
+                domApi.toggleListClass(items.toArray(), 'aciTreeChecked', state, node => {
                     node.setAttribute('aria-checked', state);
                 });
             }
         },
         // update item on load
-        _radioLoad: function(item) {
+        _radioLoad(item) {
             if (!this._instance.options.radioChain) {
                 // do not update on load
                 return;
@@ -150,7 +150,7 @@
             }
         },
         // get children list
-        _radioChildren: function(item) {
+        _radioChildren(item) {
             if (this._instance.options.radioBreak) {
                 var list = [];
                 var process = this.proxy(function(item) {
@@ -172,7 +172,7 @@
             }
         },
         // get children across items
-        _radioLevel: function(items) {
+        _radioLevel(items) {
             var list = [];
             items.each(this.proxy(function(element) {
                 var item = $(element);
@@ -187,7 +187,7 @@
             return $(list);
         },
         // update radio state
-        _radioUpdate: function(item, state) {
+        _radioUpdate(item, state) {
             // update siblings
             var siblings = this.proxy(function(item) {
                 var siblings = this.siblings(item, true);
@@ -253,11 +253,11 @@
             }
         },
         // test if item have a radio
-        hasRadio: function(item) {
+        hasRadio(item) {
             return item && domApi.hasClass(item[0], 'aciTreeRadio');
         },
         // add radio button
-        addRadio: function(item, options) {
+        addRadio(item, options) {
             options = this._options(options, 'radioadded', 'addradiofail', 'wasradio', item);
             if (this.isItem(item)) {
                 // a way to cancel the operation
@@ -289,7 +289,7 @@
             }
         },
         // remove radio button
-        removeRadio: function(item, options) {
+        removeRadio(item, options) {
             options = this._options(options, 'radioremoved', 'removeradiofail', 'notradio', item);
             if (this.isItem(item)) {
                 // a way to cancel the operation
@@ -308,7 +308,7 @@
             }
         },
         // test if it's checked
-        isChecked: function(item) {
+        isChecked(item) {
             if (this.hasRadio(item)) {
                 return domApi.hasClass(item[0], 'aciTreeChecked');
             }
@@ -320,7 +320,7 @@
             return false;
         },
         // check radio button
-        check: function(item, options) {
+        check(item, options) {
             if (this.extRadio && this.hasRadio(item)) {
                 options = this._options(options, 'checked', 'checkfail', 'waschecked', item);
                 // a way to cancel the operation
@@ -350,7 +350,7 @@
             }
         },
         // uncheck radio button
-        uncheck: function(item, options) {
+        uncheck(item, options) {
             if (this.extRadio && this.hasRadio(item)) {
                 options = this._options(options, 'unchecked', 'uncheckfail', 'notchecked', item);
                 // a way to cancel the operation
@@ -380,14 +380,14 @@
             }
         },
         // filter items with radio by state (if set)
-        radios: function(items, state) {
+        radios(items, state) {
             if (state !== undefined) {
                 return $(domApi.withClass(items.toArray(), state ? ['aciTreeRadio', 'aciTreeChecked'] : 'aciTreeRadio', state ? null : 'aciTreeChecked'));
             }
             return $(domApi.withClass(items.toArray(), 'aciTreeRadio'));
         },
         // override `_serialize`
-        _serialize: function(item, callback) {
+        _serialize(item, callback) {
             var data = this._super(item, callback);
             if (data && this.extRadio()) {
                 if (data.hasOwnProperty('radio')) {
@@ -403,7 +403,7 @@
             return data;
         },
         // override `serialize`
-        serialize: function(item, what, callback) {
+        serialize(item, what, callback) {
             if (what == 'radio') {
                 var serialized = '';
                 var children = this.children(item, true, true);
@@ -420,11 +420,11 @@
             return this._super(item, what, callback);
         },
         // test if radio is enabled
-        extRadio: function() {
+        extRadio() {
             return this._instance.options.radio;
         },
         // override set `option`
-        option: function(option, value) {
+        option(option, value) {
             if (this.wasInit() && !this.isLocked()) {
                 if ((option == 'radio') && (value != this.extRadio())) {
                     if (value) {
@@ -438,7 +438,7 @@
             this._super(option, value);
         },
         // done radio
-        _radioDone: function(destroy) {
+        _radioDone(destroy) {
             this._instance.jQuery.unbind(this._private.nameSpace);
             this._instance.jQuery.off(this._private.nameSpace, '.aciTreeItem');
             if (!destroy) {
@@ -449,7 +449,7 @@
             }
         },
         // override `_destroyHook`
-        _destroyHook: function(unloaded) {
+        _destroyHook(unloaded) {
             if (unloaded) {
                 this._radioDone(true);
             }
@@ -468,4 +468,4 @@
     // for internal access
     var domApi = aciPluginClass.plugins.aciTree_dom;
 
-})(jQuery, this);
+}))(jQuery, this);

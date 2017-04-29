@@ -25,7 +25,7 @@
  *
  */
 
-(function($, window, undefined) {
+((($, window, undefined) => {
 
     // extra default options
 
@@ -44,8 +44,8 @@
 
     var aciTree_checkbox = {
         // init checkbox
-        _checkboxInit: function() {
-            this._instance.jQuery.bind('acitree' + this._private.nameSpace, function(event, api, item, eventName, options) {
+        _checkboxInit() {
+            this._instance.jQuery.bind('acitree' + this._private.nameSpace, (event, api, item, eventName, options) => {
                 switch (eventName) {
                     case 'loaded':
                         // check/update on item load
@@ -87,7 +87,7 @@
             }));
         },
         // override `_initHook`
-        _initHook: function() {
+        _initHook() {
             if (this.extCheckbox()) {
                 this._checkboxInit();
             }
@@ -95,7 +95,7 @@
             this._super();
         },
         // override `_itemHook`
-        _itemHook: function(parent, item, itemData, level) {
+        _itemHook(parent, item, itemData, level) {
             if (this.extCheckbox()) {
                 // support `radio` extension
                 var radio = this.extRadio && this.hasRadio(item);
@@ -109,7 +109,7 @@
         // low level DOM functions
         _checkboxDOM: {
             // add item checkbox
-            add: function(item, itemData) {
+            add(item, itemData) {
                 domApi.addClass(item[0], itemData.checked ? ['aciTreeCheckbox', 'aciTreeChecked'] : 'aciTreeCheckbox');
                 var text = domApi.childrenByClass(item[0].firstChild, 'aciTreeText');
                 var parent = text.parentNode;
@@ -122,7 +122,7 @@
                 item[0].setAttribute('aria-checked', !!itemData.checked);
             },
             // remove item checkbox
-            remove: function(item) {
+            remove(item) {
                 domApi.removeClass(item[0], ['aciTreeCheckbox', 'aciTreeChecked', 'aciTreeTristate']);
                 var text = domApi.childrenByClass(item[0].firstChild, 'aciTreeText');
                 var label = text.parentNode;
@@ -131,18 +131,18 @@
                 item[0].removeAttribute('aria-checked');
             },
             // (un)check items
-            check: function(items, state) {
-                domApi.toggleListClass(items.toArray(), 'aciTreeChecked', state, function(node) {
+            check(items, state) {
+                domApi.toggleListClass(items.toArray(), 'aciTreeChecked', state, node => {
                     node.setAttribute('aria-checked', state);
                 });
             },
             // (un)set tristate items
-            tristate: function(items, state) {
+            tristate(items, state) {
                 domApi.toggleListClass(items.toArray(), 'aciTreeTristate', state);
             }
         },
         // update items on load, starting from the loaded node
-        _checkboxLoad: function(item) {
+        _checkboxLoad(item) {
             if (this._instance.options.checkboxChain === false) {
                 // do not update on load
                 return;
@@ -162,7 +162,7 @@
             this._checkboxUpdate(item, state);
         },
         // get children list
-        _checkboxChildren: function(item) {
+        _checkboxChildren(item) {
             if (this._instance.options.checkboxBreak) {
                 var list = [];
                 var process = this.proxy(function(item) {
@@ -184,7 +184,7 @@
             }
         },
         // update checkbox state
-        _checkboxUpdate: function(item, state) {
+        _checkboxUpdate(item, state) {
             // update children
             var checkDown = this.proxy(function(item, count, state) {
                 var children = this.children(item, false, true);
@@ -257,11 +257,11 @@
             checkUp(item, undefined, state);
         },
         // test if item have a checkbox
-        hasCheckbox: function(item) {
+        hasCheckbox(item) {
             return item && domApi.hasClass(item[0], 'aciTreeCheckbox');
         },
         // add checkbox
-        addCheckbox: function(item, options) {
+        addCheckbox(item, options) {
             options = this._options(options, 'checkboxadded', 'addcheckboxfail', 'wascheckbox', item);
             if (this.isItem(item)) {
                 // a way to cancel the operation
@@ -293,7 +293,7 @@
             }
         },
         // remove checkbox
-        removeCheckbox: function(item, options) {
+        removeCheckbox(item, options) {
             options = this._options(options, 'checkboxremoved', 'removecheckboxfail', 'notcheckbox', item);
             if (this.isItem(item)) {
                 // a way to cancel the operation
@@ -312,7 +312,7 @@
             }
         },
         // test if it's checked
-        isChecked: function(item) {
+        isChecked(item) {
             if (this.hasCheckbox(item)) {
                 return domApi.hasClass(item[0], 'aciTreeChecked');
             }
@@ -324,7 +324,7 @@
             return false;
         },
         // check checkbox
-        check: function(item, options) {
+        check(item, options) {
             if (this.extCheckbox && this.hasCheckbox(item)) {
                 options = this._options(options, 'checked', 'checkfail', 'waschecked', item);
                 // a way to cancel the operation
@@ -354,7 +354,7 @@
             }
         },
         // uncheck checkbox
-        uncheck: function(item, options) {
+        uncheck(item, options) {
             if (this.extCheckbox && this.hasCheckbox(item)) {
                 options = this._options(options, 'unchecked', 'uncheckfail', 'notchecked', item);
                 // a way to cancel the operation
@@ -384,14 +384,14 @@
             }
         },
         // filter items with checkbox by state (if set)
-        checkboxes: function(items, state) {
+        checkboxes(items, state) {
             if (state !== undefined) {
                 return $(domApi.withClass(items.toArray(), state ? ['aciTreeCheckbox', 'aciTreeChecked'] : 'aciTreeCheckbox', state ? null : 'aciTreeChecked'));
             }
             return $(domApi.withClass(items.toArray(), 'aciTreeCheckbox'));
         },
         // override `_serialize`
-        _serialize: function(item, callback) {
+        _serialize(item, callback) {
             var data = this._super(item, callback);
             if (data && this.extCheckbox()) {
                 if (data.hasOwnProperty('checkbox')) {
@@ -407,7 +407,7 @@
             return data;
         },
         // override `serialize`
-        serialize: function(item, what, callback) {
+        serialize(item, what, callback) {
             if (what == 'checkbox') {
                 var serialized = '';
                 var children = this.children(item, true, true);
@@ -424,19 +424,19 @@
             return this._super(item, what, callback);
         },
         // test if item is in tristate
-        isTristate: function(item) {
+        isTristate(item) {
             return item && domApi.hasClass(item[0], 'aciTreeTristate');
         },
         // filter tristate items
-        tristate: function(items) {
+        tristate(items) {
             return $(domApi.withClass(items.toArray(), 'aciTreeTristate'));
         },
         // test if checkbox is enabled
-        extCheckbox: function() {
+        extCheckbox() {
             return this._instance.options.checkbox;
         },
         // override set `option`
-        option: function(option, value) {
+        option(option, value) {
             if (this.wasInit() && !this.isLocked()) {
                 if ((option == 'checkbox') && (value != this.extCheckbox())) {
                     if (value) {
@@ -450,7 +450,7 @@
             this._super(option, value);
         },
         // done checkbox
-        _checkboxDone: function(destroy) {
+        _checkboxDone(destroy) {
             this._instance.jQuery.unbind(this._private.nameSpace);
             this._instance.jQuery.off(this._private.nameSpace, '.aciTreeItem');
             if (!destroy) {
@@ -461,7 +461,7 @@
             }
         },
         // override `_destroyHook`
-        _destroyHook: function(unloaded) {
+        _destroyHook(unloaded) {
             if (unloaded) {
                 this._checkboxDone(true);
             }
@@ -480,4 +480,4 @@
     // for internal access
     var domApi = aciPluginClass.plugins.aciTree_dom;
 
-})(jQuery, this);
+}))(jQuery, this);

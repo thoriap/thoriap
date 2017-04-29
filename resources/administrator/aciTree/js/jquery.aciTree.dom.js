@@ -22,7 +22,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // get the UL container from a LI
     // `node` must be valid LI DOM node
     // can return NULL
-    container: function(node) {
+    container(node) {
         var container = node.lastChild;
         if (container && (container.nodeName == 'UL')) {
             return container;
@@ -33,7 +33,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // `node` must be valid LI DOM node
     // `callback` can return FALSE to skip a node
     // can return NULL
-    firstChild: function(node, callback) {
+    firstChild(node, callback) {
         var container = this.container(node);
         if (container) {
             var firstChild = container.firstChild;
@@ -50,7 +50,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // `node` must be valid LI DOM node
     // `callback` can return FALSE to skip a node
     // can return NULL
-    lastChild: function(node, callback) {
+    lastChild(node, callback) {
         var container = this.container(node);
         if (container) {
             var lastChild = container.lastChild;
@@ -67,7 +67,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // `node` must be valid LI DOM node
     // `callback` can return FALSE to skip a node
     // can return NULL
-    prev: function(node, callback) {
+    prev(node, callback) {
         var previous = node.previousSibling;
         if (callback) {
             while (previous && !callback.call(this, previous)) {
@@ -80,7 +80,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // `node` must be valid LI DOM node
     // `callback` can return FALSE to skip a node
     // can return NULL
-    next: function(node, callback) {
+    next(node, callback) {
         var next = node.nextSibling;
         if (callback) {
             while (next && !callback.call(this, next)) {
@@ -93,8 +93,13 @@ aciPluginClass.plugins.aciTree_dom = {
     // `node` must be valid LI DOM node
     // `callback` can return FALSE to skip a node or NULL to prevent drill down/skip the node
     // can return NULL
-    prevAll: function(node, callback) {
-        var previous, lastChild, drillDown, match, prev, parent;
+    prevAll(node, callback) {
+        var previous;
+        var lastChild;
+        var drillDown;
+        var match;
+        var prev;
+        var parent;
         while (true) {
             previous = this.prev(node);
             if (previous) {
@@ -168,8 +173,12 @@ aciPluginClass.plugins.aciTree_dom = {
     // `node` must be valid LI DOM node
     // `callback` can return FALSE to skip a node or NULL to prevent drill down/skip the node
     // can return NULL
-    nextAll: function(node, callback) {
-        var firstChild, match, next, parent, child;
+    nextAll(node, callback) {
+        var firstChild;
+        var match;
+        var next;
+        var parent;
+        var child;
         while (true) {
             firstChild = this.firstChild(node);
             if (firstChild) {
@@ -246,7 +255,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // `node` must be valid LI DOM node
     // `callback` can return FALSE to skip a node or NULL to prevent drill down/skip the node
     // can return NULL
-    first: function(node, callback) {
+    first(node, callback) {
         var container = this.container(node);
         if (container) {
             var firstChild = container.firstChild;
@@ -263,7 +272,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // `node` must be valid LI DOM node
     // `callback` can return FALSE to skip a node or NULL to prevent drill down/skip the node
     // can return NULL
-    last: function(node, callback) {
+    last(node, callback) {
         var container = this.container(node);
         if (container) {
             var lastChild = container.lastChild;
@@ -288,8 +297,12 @@ aciPluginClass.plugins.aciTree_dom = {
     // `node` must be valid LI DOM node
     // `drillDown` if TRUE all children are returned
     // `callback` can return FALSE to skip a node or NULL to prevent drill down/skip the node
-    children: function(node, drillDown, callback) {
-        var children = [], levels = [], match, next, skip;
+    children(node, drillDown, callback) {
+        var children = [];
+        var levels = [];
+        var match;
+        var next;
+        var skip;
         var firstChild = this.firstChild(node);
         if (firstChild) {
             while (true) {
@@ -341,8 +354,11 @@ aciPluginClass.plugins.aciTree_dom = {
     // `node` must be valid DOM node
     // `callback` can return FALSE to skip a node or NULL to stop the search
     // can return NULL
-    childrenTill: function(node, callback) {
-        var levels = [], match, next, skip;
+    childrenTill(node, callback) {
+        var levels = [];
+        var match;
+        var next;
+        var skip;
         var firstChild = node.firstChild;
         if (firstChild) {
             while (true) {
@@ -381,7 +397,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // `node` must be valid DOM node
     // `className` String or Array to check for
     // can return NULL
-    childrenByClass: function(node, className) {
+    childrenByClass(node, className) {
         if (node.getElementsByClassName) {
             var list = node.getElementsByClassName(className instanceof Array ? className.join(' ') : className);
             return list ? list[0] : null;
@@ -394,7 +410,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // get the parent LI from the children LI
     // `node` must be valid LI DOM node
     // can return NULL
-    parent: function(node) {
+    parent(node) {
         var parent = node.parentNode.parentNode;
         if (parent && (parent.nodeName == 'LI')) {
             return parent;
@@ -404,7 +420,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // get the parent LI from any children
     // `node` must be valid children of a LI DOM node
     // can return NULL
-    parentFrom: function(node) {
+    parentFrom(node) {
         while (node.nodeName != 'LI') {
             node = node.parentNode;
             if (!node) {
@@ -417,7 +433,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // `node` must be valid DOM node
     // `callback` can return FALSE to skip a node or NULL to stop the search
     // can return NULL
-    parentTill: function(node, callback) {
+    parentTill(node, callback) {
         var match;
         while (node = node.parentNode) {
             match = callback.call(this, node);
@@ -433,7 +449,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // `node` must be valid DOM node
     // `className` String or Array to check for
     // can return NULL
-    parentByClass: function(node, className) {
+    parentByClass(node, className) {
         return this.parentTill(node, function(node) {
             return this.hasClass(node, className);
         });
@@ -441,7 +457,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // test if node has class(es)
     // `className` String or Array to check for
     // `withOut` String or Array to exclude with
-    hasClass: function(node, className, withOut) {
+    hasClass(node, className, withOut) {
         var oldClass = ' ' + node.className + ' ';
         if (withOut instanceof Array) {
             for (var i = 0; i < withOut.length; i++) {
@@ -470,7 +486,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // filter nodes with class(es)
     // `nodes` Array of DOM nodes
     // @see `hasClass`
-    withClass: function(nodes, className, withOut) {
+    withClass(nodes, className, withOut) {
         var filter = [];
         for (var i = 0; i < nodes.length; i++) {
             if (this.hasClass(nodes[i], className, withOut)) {
@@ -482,7 +498,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // test if node has any class(es)
     // `className` String or Array to check for (any class)
     // `withOut` String or Array to exclude with
-    hasAnyClass: function(node, className, withOut) {
+    hasAnyClass(node, className, withOut) {
         var oldClass = ' ' + node.className + ' ';
         if (withOut instanceof Array) {
             for (var i = 0; i < withOut.length; i++) {
@@ -511,7 +527,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // filter nodes with any class(es)
     // `nodes` Array of DOM nodes
     // @see `hasAnyClass`
-    withAnyClass: function(nodes, className, withOut) {
+    withAnyClass(nodes, className, withOut) {
         var filter = [];
         for (var i = 0; i < nodes.length; i++) {
             if (this.hasAnyClass(nodes[i], className, withOut)) {
@@ -524,8 +540,9 @@ aciPluginClass.plugins.aciTree_dom = {
     // `node` must be valid DOM node
     // `className` String or Array to add
     // return TRUE if className changed
-    addClass: function(node, className) {
-        var oldClass = ' ' + node.className + ' ', append = '';
+    addClass(node, className) {
+        var oldClass = ' ' + node.className + ' ';
+        var append = '';
         if (className instanceof Array) {
             for (var i = 0; i < className.length; i++) {
                 if (oldClass.indexOf(' ' + className[i] + ' ') == -1) {
@@ -546,7 +563,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // add class(es) to nodes
     // `nodes` Array of DOM nodes
     // @see `addClass`
-    addListClass: function(nodes, className, callback) {
+    addListClass(nodes, className, callback) {
         for (var i = 0; i < nodes.length; i++) {
             this.addClass(nodes[i], className);
             if (callback) {
@@ -558,7 +575,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // `node` must be valid DOM node
     // `className` String or Array to remove
     // return TRUE if className changed
-    removeClass: function(node, className) {
+    removeClass(node, className) {
         var oldClass = ' ' + node.className + ' ';
         if (className instanceof Array) {
             for (var i = 0; i < className.length; i++) {
@@ -577,7 +594,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // remove class(es) from nodes
     // `nodes` Array of DOM nodes
     // @see `removeClass`
-    removeListClass: function(nodes, className, callback) {
+    removeListClass(nodes, className, callback) {
         for (var i = 0; i < nodes.length; i++) {
             this.removeClass(nodes[i], className);
             if (callback) {
@@ -590,7 +607,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // `className` String or Array to toggle
     // `add` TRUE to add them
     // return TRUE if className changed
-    toggleClass: function(node, className, add) {
+    toggleClass(node, className, add) {
         if (add) {
             return this.addClass(node, className);
         } else {
@@ -600,7 +617,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // toggle nodes class(es)
     // `nodes` Array of DOM nodes
     // @see `toggleClass`
-    toggleListClass: function(nodes, className, add, callback) {
+    toggleListClass(nodes, className, add, callback) {
         for (var i = 0; i < nodes.length; i++) {
             this.toggleClass(nodes[i], className, add);
             if (callback) {
@@ -613,7 +630,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // `addClass` String or Array to add
     // `removeClass` String or Array to remove
     // return TRUE if className changed
-    addRemoveClass: function(node, addClass, removeClass) {
+    addRemoveClass(node, addClass, removeClass) {
         var oldClass = ' ' + node.className + ' ';
         if (removeClass) {
             if (removeClass instanceof Array) {
@@ -649,7 +666,7 @@ aciPluginClass.plugins.aciTree_dom = {
     // add/remove and keep old class(es)
     // `nodes` Array of DOM nodes
     // @see `addRemoveClass`
-    addRemoveListClass: function(nodes, addClass, removeClass, callback) {
+    addRemoveListClass(nodes, addClass, removeClass, callback) {
         for (var i = 0; i < nodes.length; i++) {
             this.addRemoveClass(nodes[i], addClass, removeClass);
             if (callback) {

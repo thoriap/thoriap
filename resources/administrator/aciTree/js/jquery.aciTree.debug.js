@@ -14,7 +14,7 @@
  * This extension adds debug capabilities, for now it's just a log of the aciTree events.
  */
 
-(function($, window, undefined) {
+((($, window, undefined) => {
 
     // extra default options
 
@@ -25,7 +25,7 @@
     // aciTree debug extension
 
     var aciTree_debug = {
-        __extend: function() {
+        __extend() {
             $.extend(this._private, {
                 logTo: null
             });
@@ -33,7 +33,7 @@
             this._super();
         },
         // init debug
-        _debugInit: function() {
+        _debugInit() {
             if (this._instance.options.logTo) {
                 this._private.logTo = $(this._instance.options.logTo);
             }
@@ -51,13 +51,13 @@
             }));
         },
         // override `_initHook`
-        _initHook: function() {
+        _initHook() {
             this._debugInit();
             // call the parent
             this._super();
         },
         // override set `option`
-        option: function(option, value) {
+        option(option, value) {
             if (option == 'logTo') {
                 this._private.logTo = value ? $(value) : null;
             }
@@ -65,11 +65,11 @@
             this._super(option, value);
         },
         // done debug
-        _debugDone: function() {
+        _debugDone() {
             this._instance.jQuery.unbind(this._private.nameSpace);
         },
         // override _destroyHook
-        _destroyHook: function(unloaded) {
+        _destroyHook(unloaded) {
             if (unloaded) {
                 this._debugDone();
             }
@@ -84,4 +84,4 @@
     // add extra default options
     aciPluginClass.defaults('aciTree', options);
 
-})(jQuery, this);
+}))(jQuery, this);

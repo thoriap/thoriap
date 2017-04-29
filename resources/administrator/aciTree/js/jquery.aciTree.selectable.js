@@ -24,7 +24,7 @@
  *
  */
 
-(function($, window, undefined) {
+((($, window, undefined) => {
 
     // extra default options
 
@@ -41,7 +41,7 @@
     // dblclick also toggles the item
 
     var aciTree_selectable = {
-        __extend: function() {
+        __extend() {
             // add extra data
             $.extend(this._instance, {
                 focus: false
@@ -54,11 +54,11 @@
             this._super();
         },
         // test if has focus
-        hasFocus: function() {
+        hasFocus() {
             return this._instance.focus;
         },
         // init selectable
-        _selectableInit: function() {
+        _selectableInit() {
             if (this._instance.jQuery.attr('tabindex') === undefined) {
                 // ensure the tree can get focus
                 this._instance.jQuery.attr('tabindex', 0);
@@ -67,7 +67,7 @@
                 // disable text selection
                 this._selectable(false);
             }
-            this._instance.jQuery.bind('acitree' + this._private.nameSpace, function(event, api, item, eventName, options) {
+            this._instance.jQuery.bind('acitree' + this._private.nameSpace, (event, api, item, eventName, options) => {
                 switch (eventName) {
                     case 'closed':
                         var focused = api.focused();
@@ -275,7 +275,7 @@
             this._multiSelectable(this._instance.options.multiSelectable);
         },
         // change full row mode
-        _fullRow: function(state) {
+        _fullRow(state) {
             this._instance.jQuery.off(this._private.nameSpace, '.aciTreeLine,.aciTreeItem').off(this._private.nameSpace, '.aciTreeItem');
             this._instance.jQuery.on('mousedown' + this._private.nameSpace + ' click' + this._private.nameSpace, state ? '.aciTreeLine,.aciTreeItem' : '.aciTreeItem', this.proxy(function(e) {
                 var item = this.itemFrom(e.target);
@@ -322,7 +322,7 @@
             }));
         },
         // change selection mode
-        _multiSelectable: function(state) {
+        _multiSelectable(state) {
             if (state) {
                 this._instance.jQuery.attr('aria-multiselectable', true);
             } else {
@@ -332,14 +332,18 @@
             }
         },
         // process `shift` key selection
-        _shiftSelect: function(item) {
+        _shiftSelect(item) {
             var spinPoint = this._private.spinPoint;
             if (!spinPoint || !$.contains(this._instance.jQuery.get(0), spinPoint.get(0)) || !this.isOpenPath(spinPoint)) {
                 var spinPoint = this.focused();
             }
             if (spinPoint.length) {
                 // select a range of items
-                var select = [item.get(0)], start = spinPoint.get(0), found = false, stop = item.get(0);
+                var select = [item.get(0)];
+
+                var start = spinPoint.get(0);
+                var found = false;
+                var stop = item.get(0);
                 var visible = this.visible(this.children(null, true));
                 visible.each(this.proxy(function(element) {
                     // find what items to select
@@ -375,7 +379,7 @@
             this._selectOne(item);
         },
         // override `_initHook`
-        _initHook: function() {
+        _initHook() {
             if (this.extSelectable()) {
                 this._selectableInit();
             }
@@ -383,7 +387,7 @@
             this._super();
         },
         // override `_itemHook`
-        _itemHook: function(parent, item, itemData, level) {
+        _itemHook(parent, item, itemData, level) {
             if (this.extSelectable() && itemData.selected) {
                 this._selectableDOM.select(item, true);
             }
@@ -393,19 +397,19 @@
         // low level DOM functions
         _selectableDOM: {
             // (de)select one or more items
-            select: function(items, state) {
+            select(items, state) {
                 if (state) {
-                    domApi.addListClass(items.toArray(), 'aciTreeSelected', function(node) {
+                    domApi.addListClass(items.toArray(), 'aciTreeSelected', node => {
                         node.setAttribute('aria-selected', true);
                     });
                 } else {
-                    domApi.removeListClass(items.toArray(), 'aciTreeSelected', function(node) {
+                    domApi.removeListClass(items.toArray(), 'aciTreeSelected', node => {
                         node.setAttribute('aria-selected', false);
                     });
                 }
             },
             // focus one item, unfocus one or more items
-            focus: function(items, state) {
+            focus(items, state) {
                 if (state) {
                     domApi.addClass(items[0], 'aciTreeFocus');
                     items[0].focus();
@@ -415,7 +419,7 @@
             }
         },
         // make element (un)selectable
-        _selectable: function(state) {
+        _selectable(state) {
             if (state) {
                 this._instance.jQuery.css({
                     '-webkit-user-select': 'text',
@@ -437,7 +441,7 @@
                 }).attr({
                     'unselectable': 'on',
                     'onselectstart': 'return false'
-                }).bind('selectstart' + this._private.nameSpace, function(e) {
+                }).bind('selectstart' + this._private.nameSpace, e => {
                     if (!$(e.target).is('input,textarea')) {
                         return false;
                     }
@@ -445,34 +449,35 @@
             }
         },
         // get first visible item
-        _first: function() {
+        _first() {
             return $(domApi.first(this._instance.jQuery[0], function(node) {
                 return this.hasClass(node, 'aciTreeVisible') ? true : null;
             }));
         },
         // get last visible item
-        _last: function() {
+        _last() {
             return $(domApi.last(this._instance.jQuery[0], function(node) {
                 return this.hasClass(node, 'aciTreeVisible') ? true : null;
             }));
         },
         // get previous visible starting with item
-        _prev: function(item) {
+        _prev(item) {
             return $(domApi.prevAll(item[0], function(node) {
                 return this.hasClass(node, 'aciTreeVisible') ? true : null;
             }));
         },
         // get next visible starting with item
-        _next: function(item) {
+        _next(item) {
             return $(domApi.nextAll(item[0], function(node) {
                 return this.hasClass(node, 'aciTreeVisible') ? true : null;
             }));
         },
         // get previous page starting with item
-        _prevPage: function(item) {
+        _prevPage(item) {
             var space = this._instance.jQuery.height();
             var now = item[0].firstChild.offsetHeight;
-            var prev = item, last = $();
+            var prev = item;
+            var last = $();
             while (now < space) {
                 prev = this._prev(prev);
                 if (prev[0]) {
@@ -485,10 +490,11 @@
             return last;
         },
         // get next page starting with item
-        _nextPage: function(item) {
+        _nextPage(item) {
             var space = this._instance.jQuery.height();
             var now = item[0].firstChild.offsetHeight;
-            var next = item, last = $();
+            var next = item;
+            var last = $();
             while (now < space) {
                 next = this._next(next);
                 if (next[0]) {
@@ -501,7 +507,7 @@
             return last;
         },
         // select one item
-        _selectOne: function(item) {
+        _selectOne(item) {
             if (this.isSelected(item)) {
                 this._focusOne(item);
             } else {
@@ -514,13 +520,13 @@
             }
         },
         // unselect the items
-        _unselect: function(items) {
+        _unselect(items) {
             items.each(this.proxy(function(element) {
                 this.deselect($(element));
             }, true));
         },
         // focus one item
-        _focusOne: function(item) {
+        _focusOne(item) {
             if (!this._instance.options.multiSelectable) {
                 this._unselect(this.selected().not(item));
             }
@@ -531,7 +537,7 @@
         // select item
         // `options.focus` when set to FALSE will not set the focus
         // `options.oldSelected` will keep the old selected items
-        select: function(item, options) {
+        select(item, options) {
             options = this._options(options, 'selected', 'selectfail', 'wasselected', item);
             if (this.extSelectable() && this.isItem(item)) {
                 // a way to cancel the operation
@@ -566,7 +572,7 @@
             }
         },
         // deselect item
-        deselect: function(item, options) {
+        deselect(item, options) {
             options = this._options(options, 'deselected', 'deselectfail', 'notselected', item);
             if (this.extSelectable() && this.isItem(item)) {
                 // a way to cancel the operation
@@ -586,7 +592,7 @@
         },
         // set `virtual` focus
         // `options.oldFocused` will keep the old focused item
-        focus: function(item, options) {
+        focus(item, options) {
             options = this._options(options, 'focus', 'focusfail', 'wasfocused', item);
             if (this.extSelectable() && this.isItem(item)) {
                 // a way to cancel the operation
@@ -614,7 +620,7 @@
             }
         },
         // remove `virtual` focus
-        blur: function(item, options) {
+        blur(item, options) {
             options = this._options(options, 'blur', 'blurfail', 'notfocused', item);
             if (this.extSelectable() && this.isItem(item)) {
                 // a way to cancel the operation
@@ -633,11 +639,11 @@
             }
         },
         // get selected items
-        selected: function() {
+        selected() {
             return this._instance.jQuery.find('.aciTreeSelected');
         },
         // override `_serialize`
-        _serialize: function(item, callback) {
+        _serialize(item, callback) {
             // call the parent
             var data = this._super(item, callback);
             if (data && this.extSelectable()) {
@@ -650,23 +656,23 @@
             return data;
         },
         // test if item is selected
-        isSelected: function(item) {
+        isSelected(item) {
             return item && domApi.hasClass(item[0], 'aciTreeSelected');
         },
         // return the focused item
-        focused: function() {
+        focused() {
             return this._instance.jQuery.find('.aciTreeFocus');
         },
         // test if item is focused
-        isFocused: function(item) {
+        isFocused(item) {
             return item && domApi.hasClass(item[0], 'aciTreeFocus');
         },
         // test if selectable is enabled
-        extSelectable: function() {
+        extSelectable() {
             return this._instance.options.selectable;
         },
         // override set `option`
-        option: function(option, value) {
+        option(option, value) {
             if (this.wasInit() && !this.isLocked()) {
                 if ((option == 'selectable') && (value != this.extSelectable())) {
                     if (value) {
@@ -689,7 +695,7 @@
             this._super(option, value);
         },
         // done selectable
-        _selectableDone: function(destroy) {
+        _selectableDone(destroy) {
             if (this._instance.jQuery.attr('tabindex') == 0) {
                 this._instance.jQuery.removeAttr('tabindex');
             }
@@ -711,7 +717,7 @@
             }
         },
         // override `_destroyHook`
-        _destroyHook: function(unloaded) {
+        _destroyHook(unloaded) {
             if (unloaded) {
                 this._selectableDone(true);
             }
@@ -730,4 +736,4 @@
     // for internal access
     var domApi = aciPluginClass.plugins.aciTree_dom;
 
-})(jQuery, this);
+}))(jQuery, this);

@@ -17,7 +17,7 @@
  * Require aciFragment https://github.com/dragosu/jquery-aciFragment and the utils extension for finding items by ID.
  */
 
-(function($, window, undefined) {
+((($, window, undefined) => {
 
     // extra default options
 
@@ -30,7 +30,7 @@
     // select/open items based on IDs stored in the fragment of the current URL
 
     var aciTree_hash = {
-        __extend: function() {
+        __extend() {
             $.extend(this._private, {
                 lastSelect: null,
                 lastOpen: null,
@@ -41,11 +41,11 @@
             this._super();
         },
         // init hash
-        _hashInit: function() {
+        _hashInit() {
             // init `aciFragment`
             this._instance.jQuery.aciFragment();
             this._private.hashApi = this._instance.jQuery.aciFragment('api');
-            this._instance.jQuery.bind('acitree' + this._private.nameSpace, function(event, api, item, eventName, options) {
+            this._instance.jQuery.bind('acitree' + this._private.nameSpace, (event, api, item, eventName, options) => {
                 switch (eventName) {
                     case 'init':
                         api._hashRestore();
@@ -57,7 +57,7 @@
             }));
         },
         // override `_initHook`
-        _initHook: function() {
+        _initHook() {
             if (this.extHast()) {
                 this._hashInit();
             }
@@ -65,16 +65,16 @@
             this._super();
         },
         // restore item states from hash
-        _hashRestore: function() {
+        _hashRestore() {
             var queue = this._instance.queue;
-            var process = function(opened) {
+            var process = opened => {
                 // open all hash items
                 for (var i in opened) {
-                    (function(id) {
+                    ((id => {
                         // add item to queue
                         queue.push(function(complete) {
                             this.search(null, {
-                                success: function(item) {
+                                success(item) {
                                     this.open(item, {
                                         uid: 'ui.hash',
                                         success: complete,
@@ -85,7 +85,7 @@
                                 search: id
                             });
                         });
-                    })(opened[i]);
+                    }))(opened[i]);
                 }
             };
             if (this._instance.options.openHash) {
@@ -108,10 +108,10 @@
                         // select item
                         queue.push(function(complete) {
                             this.search(null, {
-                                success: function(item) {
+                                success(item) {
                                     this.select(item, {
                                         uid: 'ui.hash',
-                                        success: function(item) {
+                                        success(item) {
                                             this.setVisible(item, {
                                                 center: true
                                             });
@@ -129,11 +129,11 @@
             }
         },
         // test if hash is enabled
-        extHast: function() {
+        extHast() {
             return this._instance.options.selectHash || this._instance.options.openHash;
         },
         // override set option
-        option: function(option, value) {
+        option(option, value) {
             var hash = this.extHast();
             // call the parent
             this._super(option, value);
@@ -146,13 +146,13 @@
             }
         },
         // done hash
-        _hashDone: function() {
+        _hashDone() {
             this._instance.jQuery.unbind(this._private.nameSpace);
             this._private.hashApi = null;
             this._instance.jQuery.aciFragment('destroy');
         },
         // override `_destroyHook`
-        _destroyHook: function(unloaded) {
+        _destroyHook(unloaded) {
             if (unloaded) {
                 this._hashDone();
             }
@@ -167,4 +167,4 @@
     // add extra default options
     aciPluginClass.defaults('aciTree', options);
 
-})(jQuery, this);
+}))(jQuery, this);

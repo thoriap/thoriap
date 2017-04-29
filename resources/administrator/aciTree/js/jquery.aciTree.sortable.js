@@ -15,7 +15,7 @@
  * Require aciSortable https://github.com/dragosu/jquery-aciSortable and the utils extension for reordering items.
  */
 
-(function($, window, undefined) {
+((($, window, undefined) => {
 
     // extra default options
 
@@ -23,13 +23,13 @@
         sortable: false,             // if TRUE then the tree items can be sorted
         sortDelay: 750,              // how many [ms] before opening a inode on hovering when in drag
         // called by the `aciSortable` inside the `drag` callback
-        sortDrag: function(item, placeholder, isValid, helper) {
+        sortDrag(item, placeholder, isValid, helper) {
             if (!isValid) {
                 helper.html(this.getLabel(item));
             }
         },
         // called by the `aciSortable` inside the `valid` callback
-        sortValid: function(item, hover, before, isContainer, placeholder, helper) {
+        sortValid(item, hover, before, isContainer, placeholder, helper) {
             if (isContainer) {
                 helper.html('move ' + this.getLabel(item) + ' to ' + this.getLabel(this.itemFrom(hover)));
                 placeholder.removeClass('aciTreeAfter aciTreeBefore');
@@ -48,7 +48,7 @@
     // aciTree sortable extension
 
     var aciTree_sortable = {
-        __extend: function() {
+        __extend() {
             // add extra data
             $.extend(this._private, {
                 openTimeout: null,
@@ -58,7 +58,7 @@
             this._super();
         },
         // init sortable
-        _sortableInit: function() {
+        _sortableInit() {
             this._instance.jQuery.aciSortable({
                 container: '.aciTreeUl',
                 item: '.aciTreeLi',
@@ -105,11 +105,11 @@
                         return false;
                     }
                     var options = this._options({
-                        hover: hover,
-                        before: before,
-                        isContainer: isContainer,
-                        placeholder: placeholder,
-                        helper: helper
+                        hover,
+                        before,
+                        isContainer,
+                        placeholder,
+                        helper
                     });
                     // a way to cancel the operation
                     if (!this._trigger(item, 'checkdrop', options)) {
@@ -120,10 +120,10 @@
                             this._private.openTimeout = window.setTimeout(this.proxy(function() {
                                 hover.data('opening' + this._private.nameSpace, true);
                                 this.open(hover, {
-                                    success: function(item) {
+                                    success(item) {
                                         item.removeData('opening' + this._private.nameSpace);
                                     },
-                                    fail: function(item) {
+                                    fail(item) {
                                         item.removeData('opening' + this._private.nameSpace);
                                     }
                                 });
@@ -147,8 +147,8 @@
                 end: this.proxy(function(item, hover, placeholder, helper) {
                     window.clearTimeout(this._private.openTimeout);
                     var options = {
-                        placeholder: placeholder,
-                        helper: helper
+                        placeholder,
+                        helper
                     };
                     options = this._options(options, 'sorted', 'dropfail', null, item);
                     if (placeholder.parent().length) {
@@ -189,7 +189,7 @@
                                     // we can set asChild only for leaves
                                     var items = this._private.dragDrop;
                                     this.asChild(items.eq(0), this._inner(options, {
-                                        success: function() {
+                                        success() {
                                             this._success(item, options);
                                             this.open(parent);
                                             items.filter(':gt(0)').each(this.proxy(function(element) {
@@ -201,7 +201,7 @@
                                             }, true));
                                         },
                                         fail: options.fail,
-                                        parent: parent
+                                        parent
                                     }));
                                 } else {
                                     this._fail(item, options);
@@ -224,7 +224,7 @@
                             opacity: 0
                         },
                         {
-                            complete: function() {
+                            complete() {
                                 // detach the helper when completed
                                 helper.detach();
                             }
@@ -235,7 +235,7 @@
             });
         },
         // override `_initHook`
-        _initHook: function() {
+        _initHook() {
             if (this.extSortable()) {
                 this._sortableInit();
             }
@@ -243,8 +243,11 @@
             this._super();
         },
         // reduce items by removing the childrens
-        _parents: function(items) {
-            var len = items.length, a, b, remove = [];
+        _parents(items) {
+            var len = items.length;
+            var a;
+            var b;
+            var remove = [];
             for (var i = 0; i < len - 1; i++) {
                 a = items.eq(i);
                 for (var j = i + 1; j < len; j++) {
@@ -259,7 +262,7 @@
             return items.not(remove);
         },
         // called before drag start
-        _initDrag: function(item) {
+        _initDrag(item) {
             // support `selectable` extension
             if (this.extSelectable && this.extSelectable()) {
                 if (!this.hasFocus()) {
@@ -284,7 +287,7 @@
             return true;
         },
         // check the drop target
-        _checkDrop: function(item, hover, before, isContainer, placeholder, helper) {
+        _checkDrop(item, hover, before, isContainer, placeholder, helper) {
             var items = this._private.dragDrop;
             if (!items) {
                 return false;
@@ -302,11 +305,11 @@
             return true;
         },
         // test if sortable is enabled
-        extSortable: function() {
+        extSortable() {
             return this._instance.options.sortable;
         },
         // override set `option`
-        option: function(option, value) {
+        option(option, value) {
             if (this.wasInit() && !this.isLocked()) {
                 if ((option == 'sortable') && (value != this.extSortable())) {
                     if (value) {
@@ -320,12 +323,12 @@
             this._super(option, value);
         },
         // done sortable
-        _sortableDone: function() {
+        _sortableDone() {
             this._instance.jQuery.unbind(this._private.nameSpace);
             this._instance.jQuery.aciSortable('destroy');
         },
         // override `_destroyHook`
-        _destroyHook: function(unloaded) {
+        _destroyHook(unloaded) {
             if (unloaded) {
                 this._sortableDone();
             }
@@ -340,4 +343,4 @@
     // add extra default options
     aciPluginClass.defaults('aciTree', options);
 
-})(jQuery, this);
+}))(jQuery, this);
