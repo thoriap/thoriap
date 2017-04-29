@@ -16,7 +16,7 @@
  * Require jStorage https://github.com/andris9/jStorage and the utils extension for finding items by ID.
  */
 
-(function($, window, undefined) {
+((($, window, undefined) => {
 
     // extra default options
 
@@ -28,7 +28,7 @@
     // save/restore item state in/from local storage
 
     var aciTree_persist = {
-        __extend: function() {
+        __extend() {
             $.extend(this._private, {
                 // timeouts for the save operation
                 selectTimeout: null,
@@ -39,8 +39,8 @@
             this._super();
         },
         // init persist
-        _initPersist: function() {
-            this._instance.jQuery.bind('acitree' + this._private.nameSpace, function(event, api, item, eventName, options) {
+        _initPersist() {
+            this._instance.jQuery.bind('acitree' + this._private.nameSpace, (event, api, item, eventName, options) => {
                 if (options.uid == 'ui.persist') {
                     // skip processing itself
                     return;
@@ -67,7 +67,7 @@
             });
         },
         // override `_initHook`
-        _initHook: function() {
+        _initHook() {
             if (this.extPersist()) {
                 this._initPersist();
             }
@@ -75,7 +75,7 @@
             this._super();
         },
         // persist states
-        _persistLater: function(type) {
+        _persistLater(type) {
             switch (type) {
                 case 'selected':
                     window.clearTimeout(this._private.selectTimeout);
@@ -98,7 +98,7 @@
             }
         },
         // restore item states
-        _persistRestore: function() {
+        _persistRestore() {
             var queue = new this._queue(this, this._instance.options.queue);
             var task = new this._task(queue, function(complete) {
                 // support `selectable` extension
@@ -107,13 +107,13 @@
                     if (selected instanceof Array) {
                         // select all saved items
                         for (var i in selected) {
-                            (function(path) {
+                            ((path => {
                                 queue.push(function(complete) {
                                     this.searchPath(null, {
-                                        success: function(item) {
+                                        success(item) {
                                             this.select(item, {
                                                 uid: 'ui.persist',
-                                                success: function() {
+                                                success() {
                                                     complete();
                                                 },
                                                 fail: complete,
@@ -124,7 +124,7 @@
                                         path: path.split(';')
                                     });
                                 });
-                            })(selected[i]);
+                            }))(selected[i]);
                             if (!this._instance.options.multiSelectable) {
                                 break;
                             }
@@ -134,13 +134,13 @@
                     if (focused instanceof Array) {
                         // focus all saved items
                         for (var i in focused) {
-                            (function(path) {
+                            ((path => {
                                 queue.push(function(complete) {
                                     this.searchPath(null, {
-                                        success: function(item) {
+                                        success(item) {
                                             this.focus(item, {
                                                 uid: 'ui.persist',
-                                                success: function(item) {
+                                                success(item) {
                                                     this.setVisible(item, {
                                                         center: true
                                                     });
@@ -153,7 +153,7 @@
                                         path: path.split(';')
                                     });
                                 });
-                            })(focused[i]);
+                            }))(focused[i]);
                         }
                     }
                 }
@@ -163,11 +163,11 @@
             if (opened instanceof Array) {
                 // open all saved items
                 for (var i in opened) {
-                    (function(path) {
+                    ((path => {
                         // add item to queue
                         task.push(function(complete) {
                             this.searchPath(null, {
-                                success: function(item) {
+                                success(item) {
                                     this.open(item, {
                                         uid: 'ui.persist',
                                         success: complete,
@@ -179,12 +179,12 @@
                                 load: true
                             });
                         });
-                    })(opened[i]);
+                    }))(opened[i]);
                 }
             }
         },
         // persist selected items
-        _persistSelected: function() {
+        _persistSelected() {
             // support `selectable` extension
             if (this.extSelectable && this.extSelectable()) {
                 var selected = [];
@@ -198,7 +198,7 @@
             }
         },
         // persist focused item
-        _persistFocused: function() {
+        _persistFocused() {
             // support `selectable` extension
             if (this.extSelectable && this.extSelectable()) {
                 var focused = [];
@@ -212,7 +212,7 @@
             }
         },
         // persist opened items
-        _persistOpened: function() {
+        _persistOpened() {
             var opened = [];
             this.inodes(this.children(null, true), true).each(this.proxy(function(element) {
                 var item = $(element);
@@ -225,7 +225,7 @@
             $.jStorage.set('aciTree_' + this._instance.options.persist + '_opened', opened);
         },
         // test if there is any saved data
-        isPersist: function() {
+        isPersist() {
             if (this.extPersist()) {
                 var selected = $.jStorage.get('aciTree_' + this._instance.options.persist + '_selected');
                 if (selected instanceof Array) {
@@ -243,7 +243,7 @@
             return false;
         },
         // remove any saved states
-        unpersist: function() {
+        unpersist() {
             if (this.extPersist()) {
                 $.jStorage.deleteKey('aciTree_' + this._instance.options.persist + '_selected');
                 $.jStorage.deleteKey('aciTree_' + this._instance.options.persist + '_focused');
@@ -251,11 +251,11 @@
             }
         },
         // test if persist is enabled
-        extPersist: function() {
+        extPersist() {
             return this._instance.options.persist;
         },
         // override set `option`
-        option: function(option, value) {
+        option(option, value) {
             var persist = this.extPersist();
             // call the parent
             this._super(option, value);
@@ -268,11 +268,11 @@
             }
         },
         // done persist
-        _donePersist: function() {
+        _donePersist() {
             this._instance.jQuery.unbind(this._private.nameSpace);
         },
         // override `_destroyHook`
-        _destroyHook: function(unloaded) {
+        _destroyHook(unloaded) {
             if (unloaded) {
                 this._donePersist();
             }
@@ -287,4 +287,4 @@
     // add extra default options
     aciPluginClass.defaults('aciTree', options);
 
-})(jQuery, this);
+}))(jQuery, this);

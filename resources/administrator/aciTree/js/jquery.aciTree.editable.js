@@ -15,7 +15,7 @@
  * should be used with the selectable extension.
  */
 
-(function($, window, undefined) {
+((($, window, undefined) => {
 
     // extra default options
 
@@ -29,7 +29,7 @@
     // press enter/escape to save/cancel the text edit
 
     var aciTree_editable = {
-        __extend: function() {
+        __extend() {
             // add extra data
             $.extend(this._private, {
                 editTimestamp: null
@@ -38,8 +38,8 @@
             this._super();
         },
         // init editable
-        _editableInit: function() {
-            this._instance.jQuery.bind('acitree' + this._private.nameSpace, function(event, api, item, eventName, options) {
+        _editableInit() {
+            this._instance.jQuery.bind('acitree' + this._private.nameSpace, (event, api, item, eventName, options) => {
                 switch (eventName) {
                     case 'blurred':
                         // support `selectable` extension
@@ -132,12 +132,12 @@
                     // cancel edit/save the changes
                     this.endEdit();
                 }
-            })).on('click' + this._private.nameSpace + ' dblclick' + this._private.nameSpace, 'input[type=text]', function(e) {
+            })).on('click' + this._private.nameSpace + ' dblclick' + this._private.nameSpace, 'input[type=text]', e => {
                 e.stopPropagation();
             });
         },
         // override `_initHook`
-        _initHook: function() {
+        _initHook() {
             if (this.extEditable()) {
                 this._editableInit();
             }
@@ -147,33 +147,33 @@
         // low level DOM functions
         _editableDOM: {
             // add edit field
-            add: function(item) {
+            add(item) {
                 var line = item.addClass('aciTreeEdited').children('.aciTreeLine');
                 line.find('.aciTreeText').html('<input id="aciTree-editable-tree-item" type="text" value="" style="-webkit-user-select:text;-moz-user-select:text;-ms-user-select:text;-o-user-select:text;user-select:text" />');
                 line.find('label').attr('for', 'aciTree-editable-tree-item');
                 this._editableDOM.get(item).val(this.getLabel(item));
             },
             // remove edit field
-            remove: function(item, label) {
+            remove(item, label) {
                 var line = item.removeClass('aciTreeEdited').children('.aciTreeLine');
                 line.find('.aciTreeText').html(this.getLabel(item));
                 line.find('label').removeAttr('for');
             },
             // return edit field
-            get: function(item) {
+            get(item) {
                 return item ? item.children('.aciTreeLine').find('input[type=text]') : $([]);
             }
         },
         // get edited item
-        edited: function() {
+        edited() {
             return this._instance.jQuery.find('.aciTreeEdited');
         },
         // test if item is edited
-        isEdited: function(item) {
+        isEdited(item) {
             return item && domApi.hasClass(item[0], 'aciTreeEdited');
         },
         // set focus to the input
-        _focusEdit: function(item) {
+        _focusEdit(item) {
             var field = this._editableDOM.get(item).focus().trigger('click').get(0);
             if (field) {
                 if (typeof field.selectionStart == 'number') {
@@ -186,14 +186,14 @@
             }
         },
         // override `setLabel`
-        setLabel: function(item, options) {
+        setLabel(item, options) {
             if (!this.extEditable() || !this.isEdited(item)) {
                 // call the parent
                 this._super(item, options);
             }
         },
         // edit item inplace
-        edit: function(item, options) {
+        edit(item, options) {
             options = this._options(options, 'edit', 'editfail', 'wasedit', item);
             if (this.extEditable() && this.isItem(item)) {
                 // a way to cancel the operation
@@ -220,7 +220,7 @@
         },
         // end edit
         // `options.save` when set to FALSE will not save the changes
-        endEdit: function(options) {
+        endEdit(options) {
             var item = this.edited();
             options = this._options(options, 'edited', 'endeditfail', 'endedit', item);
             if (this.extEditable() && this.isItem(item)) {
@@ -244,11 +244,11 @@
             }
         },
         // test if editable is enabled
-        extEditable: function() {
+        extEditable() {
             return this._instance.options.editable;
         },
         // override set `option`
-        option: function(option, value) {
+        option(option, value) {
             if (this.wasInit() && !this.isLocked()) {
                 if ((option == 'editable') && (value != this.extEditable())) {
                     if (value) {
@@ -262,7 +262,7 @@
             this._super(option, value);
         },
         // done editable
-        _editableDone: function() {
+        _editableDone() {
             this._instance.jQuery.unbind(this._private.nameSpace);
             this._instance.jQuery.off(this._private.nameSpace, '.aciTreeItem');
             this._instance.jQuery.off(this._private.nameSpace, 'input[type=text]');
@@ -272,7 +272,7 @@
             }
         },
         // override `_destroyHook`
-        _destroyHook: function(unloaded) {
+        _destroyHook(unloaded) {
             if (unloaded) {
                 this._editableDone();
             }
@@ -291,4 +291,4 @@
     // for internal access
     var domApi = aciPluginClass.plugins.aciTree_dom;
 
-})(jQuery, this);
+}))(jQuery, this);

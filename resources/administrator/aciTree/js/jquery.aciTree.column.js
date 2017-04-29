@@ -32,7 +32,7 @@
  *
  */
 
-(function($, window, undefined) {
+((($, window, undefined) => {
 
     // extra default options
 
@@ -44,7 +44,7 @@
     // adds item columns, set width with CSS or using the API
 
     var aciTree_column = {
-        __extend: function() {
+        __extend() {
             // add extra data
             $.extend(this._private, {
                 propsIndex: { // column index cache
@@ -54,10 +54,12 @@
             this._super();
         },
         // override `_initHook`
-        _initHook: function() {
+        _initHook() {
             if (this._instance.options.columnData.length) {
                 // check column width
-                var found = false, data;
+                var found = false;
+
+                var data;
                 for (var i in this._instance.options.columnData) {
                     data = this._instance.options.columnData[i];
                     if (data.width !== undefined) {
@@ -76,12 +78,13 @@
             this._super();
         },
         // read property value from a CSS class name
-        _getCss: function(className, property, numeric) {
+        _getCss(className, property, numeric) {
             var id = '_getCss_' + window.String(className).replace(/[^a-z0-9_-]/ig, '_');
             var test = $('body').find('#' + id);
             if (!test.length) {
                 if (className instanceof Array) {
-                    var style = '', end = '';
+                    var style = '';
+                    var end = '';
                     for (var i in className) {
                         style += '<div class="' + className[i] + '">';
                         end += '</div>';
@@ -103,7 +106,7 @@
             return value;
         },
         // dynamically change a CSS class definition
-        _updateCss: function(className, definition) {
+        _updateCss(className, definition) {
             var id = '_updateCss_' + window.String(className).replace('>', '_gt_').replace(/[^a-z0-9_-]/ig, '_');
             var style = '<style id="' + id + '" type="text/css">' + className + '{' + definition + '}</style>';
             var test = $('body').find('#' + id);
@@ -115,7 +118,7 @@
         },
         // get column width
         // `index` is the #0 based column index
-        getWidth: function(index) {
+        getWidth(index) {
             if ((index >= 0) && (index < this.columns())) {
                 return this._getCss(['aciTree aciTree' + this._instance.index, 'aciTreeColumn' + index], 'width', true);
             }
@@ -123,14 +126,14 @@
         },
         // set column width
         // `index` is the #0 based column index
-        setWidth: function(index, width) {
+        setWidth(index, width) {
             if ((index >= 0) && (index < this.columns())) {
                 this._updateCss('.aciTree.aciTree' + this._instance.index + ' .aciTreeColumn' + index, 'width:' + width + 'px;');
                 this._updateWidth();
             }
         },
         // update item margins
-        _updateWidth: function() {
+        _updateWidth() {
             var width = 0;
             for (var i in this._instance.options.columnData) {
                 if (this.isColumn(i)) {
@@ -145,7 +148,7 @@
         },
         // test if column is visible
         // `index` is the #0 based column index
-        isColumn: function(index) {
+        isColumn(index) {
             if ((index >= 0) && (index < this.columns())) {
                 return this._getCss(['aciTree aciTree' + this._instance.index, 'aciTreeColumn' + index], 'display') != 'none';
             }
@@ -153,20 +156,20 @@
         },
         // get column index by `props`
         // return -1 if the column does not exists
-        columnIndex: function(props) {
+        columnIndex(props) {
             if (this._private.propsIndex[props] !== undefined) {
                 return this._private.propsIndex[props];
             }
             return -1;
         },
         // get the column count
-        columns: function() {
+        columns() {
             return this._instance.options.columnData.length;
         },
         // set column to be visible or hidden
         // `index` is the #0 based column index
         // if `show` is undefined then the column visibility will be toggled
-        toggleColumn: function(index, show) {
+        toggleColumn(index, show) {
             if ((index >= 0) && (index < this.columns())) {
                 if (show === undefined) {
                     var show = !this.isColumn(index);
@@ -176,9 +179,11 @@
             }
         },
         // override `_itemHook`
-        _itemHook: function(parent, item, itemData, level) {
+        _itemHook(parent, item, itemData, level) {
             if (this.columns()) {
-                var position = domApi.childrenByClass(item[0].firstChild, 'aciTreeEntry'), data, column;
+                var position = domApi.childrenByClass(item[0].firstChild, 'aciTreeEntry');
+                var data;
+                var column;
                 for (var i in this._instance.options.columnData) {
                     data = this._instance.options.columnData[i];
                     column = this._createColumn(itemData, data, i);
@@ -192,7 +197,7 @@
         // `itemData` item data object
         // `columnData` column data definition
         // `index` is the #0 based column index
-        _createColumn: function(itemData, columnData, index) {
+        _createColumn(itemData, columnData, index) {
             var value = columnData.props && (itemData[columnData.props] !== undefined) ? itemData[columnData.props] :
                     ((columnData.value === undefined) ? '' : columnData.value);
             var column = window.document.createElement('DIV');
@@ -204,7 +209,7 @@
         // `options.index` the #0 based column index
         // `options.value` is the new content
         // `options.oldValue` will keep the old content
-        setColumn: function(item, options) {
+        setColumn(item, options) {
             options = this._options(options, 'columnset', 'columnfail', 'wascolumn', item);
             if (this.isItem(item) && (options.index >= 0) && (options.index < this.columns())) {
                 // a way to cancel the operation
@@ -229,7 +234,7 @@
             }
         },
         // get column content
-        getColumn: function(item, index) {
+        getColumn(item, index) {
             if ((index >= 0) && (index < this.columns())) {
                 var data = this.itemData(item);
                 return data ? data[this._instance.options.columnData[index].props] : null;
@@ -247,4 +252,4 @@
     // for internal access
     var domApi = aciPluginClass.plugins.aciTree_dom;
 
-})(jQuery, this);
+}))(jQuery, this);

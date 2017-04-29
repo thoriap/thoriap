@@ -14,14 +14,14 @@
  * A few utility functions for aciTree.
  */
 
-(function($, window, undefined) {
+((($, window, undefined) => {
 
     // extra default options
 
     var options = {
         // called when items need to be filtered, for each tree item
         // return TRUE/FALSE to include/exclude items on filtering
-        filterHook: function(item, search, regexp) {
+        filterHook(item, search, regexp) {
             return search.length ? regexp.test(window.String(this.getLabel(item))) : true;
         }
     };
@@ -30,7 +30,7 @@
     // adds item update option, branch processing, moving items & item swapping, item search by ID
 
     var aciTree_utils = {
-        __extend: function() {
+        __extend() {
             // add extra data
             $.extend(this._instance, {
                 filter: new this._queue(this, this._instance.options.queue)
@@ -42,7 +42,7 @@
         },
         // call the `callback` function (item) for each children of item
         // when `load` is TRUE will also try to load nodes
-        branch: function(item, callback, load) {
+        branch(item, callback, load) {
             var queue = this._instance.queue;
             var process = this.proxy(function(item, callback, next) {
                 var child = next ? this.next(item) : this.first(item);
@@ -58,12 +58,12 @@
                         } else if (load) {
                             // load the item first
                             this.ajaxLoad(child, {
-                                success: function() {
+                                success() {
                                     callback.call(this, child);
                                     process(child, callback);
                                     process(child, callback, true);
                                 },
-                                fail: function() {
+                                fail() {
                                     process(child, callback, true);
                                 }
                             });
@@ -87,7 +87,7 @@
         },
         // swap two items (they can't be parent & children)
         // `options.item1` & `options.item2` are the swapped items
-        swap: function(options) {
+        swap(options) {
             options = this._options(options, null, 'swapfail', null, null);
             var item1 = options.item1;
             var item2 = options.item2;
@@ -137,7 +137,7 @@
             }
         },
         // update item level
-        _updateItemLevel: function(item, fromLevel, toLevel) {
+        _updateItemLevel(item, fromLevel, toLevel) {
             item.removeClass('aciTreeLevel' + fromLevel).addClass('aciTreeLevel' + toLevel);
             var entry = item.children('.aciTreeLine').find('.aciTreeEntry');
             if (fromLevel < toLevel) {
@@ -151,7 +151,7 @@
             }
         },
         // update child level
-        _updateChildLevel: function(item, fromLevel, toLevel) {
+        _updateChildLevel(item, fromLevel, toLevel) {
             this.children(item).each(this.proxy(function(element) {
                 var item = $(element);
                 this._updateItemLevel(item, fromLevel, toLevel);
@@ -163,7 +163,7 @@
             }, true));
         },
         // update item level
-        _updateLevel: function(item) {
+        _updateLevel(item) {
             var level = this.level(item);
             var found = window.parseInt(item.attr('class').match(/aciTreeLevel[0-9]+/)[0].match(/[0-9]+/));
             if (level != found) {
@@ -172,32 +172,32 @@
             }
         },
         // move item up
-        moveUp: function(item, options) {
+        moveUp(item, options) {
             options = this._options(options);
             options.index = window.Math.max(this.getIndex(item) - 1, 0);
             this.setIndex(item, options);
         },
         // move item down
-        moveDown: function(item, options) {
+        moveDown(item, options) {
             options = this._options(options);
             options.index = window.Math.min(this.getIndex(item) + 1, this.siblings(item).length);
             this.setIndex(item, options);
         },
         // move item in first position
-        moveFirst: function(item, options) {
+        moveFirst(item, options) {
             options = this._options(options);
             options.index = 0;
             this.setIndex(item, options);
         },
         // move item in last position
-        moveLast: function(item, options) {
+        moveLast(item, options) {
             options = this._options(options);
             options.index = this.siblings(item).length;
             this.setIndex(item, options);
         },
         // move item before another (they can't be parent & children)
         // `options.before` is the element before which the item will be moved
-        moveBefore: function(item, options) {
+        moveBefore(item, options) {
             options = this._options(options, null, 'movefail', 'wasbefore', item);
             var before = options.before;
             if (this.isItem(item) && this.isItem(before) && !this.isChildren(item, before) && (item.get(0) != before.get(0))) {
@@ -234,7 +234,7 @@
         },
         // move item after another (they can't be parent & children)
         // `options.after` is the element after which the item will be moved
-        moveAfter: function(item, options) {
+        moveAfter(item, options) {
             options = this._options(options, null, 'movefail', 'wasafter', item);
             var after = options.after;
             if (this.isItem(item) && this.isItem(after) && !this.isChildren(item, after) && (item.get(0) != after.get(0))) {
@@ -270,7 +270,7 @@
         },
         // move item to be a child of another (they can't be parent & children and the targeted parent item must be empty)
         // `options.parent` is the parent element on which the item will be added
-        asChild: function(item, options) {
+        asChild(item, options) {
             options = this._options(options, null, 'childfail', null, item);
             var parent = options.parent;
             if (this.isItem(item) && this.isItem(parent) && !this.isChildren(item, parent) && !this.hasChildren(parent, true) && (item.get(0) != parent.get(0))) {
@@ -314,9 +314,13 @@
             }
         },
         // search a `path` ID from a parent
-        _search: function(parent, pathId) {
+        _search(parent, pathId) {
             var items = this.children(parent);
-            var item, id, length, found, exact = false;
+            var item;
+            var id;
+            var length;
+            var found;
+            var exact = false;
             for (var i = 0, size = items.length; i < size; i++) {
                 item = items.eq(i);
                 id = window.String(this.getId(item));
@@ -339,7 +343,7 @@
                 }
                 return {
                     item: found,
-                    exact: exact
+                    exact
                 };
             } else {
                 return null;
@@ -351,7 +355,7 @@
         // and reduced to the first branch that matches the ID
         // but the ID must be set like a path otherwise will not work
         // if `load` is TRUE will also try to load nodes (works only when `path` is TRUE)
-        searchId: function(path, load, options) {
+        searchId(path, load, options) {
             options = this._options(options);
             var id = options.id;
             if (path) {
@@ -367,7 +371,7 @@
                                 } else {
                                     // load the item
                                     this.ajaxLoad(found.item, this._inner(options, {
-                                        success: function() {
+                                        success() {
                                             process(found.item);
                                         },
                                         fail: options.fail
@@ -407,7 +411,7 @@
         // `options.load` if TRUE will try to load nodes
         // `options.callback` function (item, search) return TRUE for the custom match
         // `options.results` will keep the search results
-        search: function(item, options) {
+        search(item, options) {
             var results = [];
             options = this._options(options);
             var task = new this._task(new this._queue(this, this._instance.options.queue), function(complete) {
@@ -437,7 +441,7 @@
                     }
                     if (this.isInode($(element))) {
                         // process children
-                        task.push(function(complete) {
+                        task.push(complete => {
                             search($(element));
                             complete();
                         });
@@ -447,7 +451,7 @@
             var search = this.proxy(function(item) {
                 if (this.wasLoad(item)) {
                     // process children
-                    task.push(function(complete) {
+                    task.push(complete => {
                         children(item);
                         complete();
                     });
@@ -455,7 +459,7 @@
                     task.push(function(complete) {
                         // load the item first
                         this.ajaxLoad(item, {
-                            success: function() {
+                            success() {
                                 children(item);
                                 complete();
                             },
@@ -465,7 +469,7 @@
                 }
             });
             // run the search
-            task.push(function(complete) {
+            task.push(complete => {
                 search(item);
                 complete();
             });
@@ -473,24 +477,24 @@
         // search node by a list of IDs starting from item
         // `options.path` is a list of IDs to be searched - the path to the node
         // `options.load` if TRUE will try to load nodes
-        searchPath: function(item, options) {
+        searchPath(item, options) {
             options = this._options(options);
             var path = options.path;
             var search = this.proxy(function(item, id) {
                 this.search(item, {
-                    success: function(item) {
+                    success(item) {
                         if (path.length) {
                             search(item, path.shift());
                         } else {
                             this._success(item, options);
                         }
                     },
-                    fail: function() {
+                    fail() {
                         this._fail(item, options);
                     },
                     search: id,
                     load: options.load,
-                    callback: function(item, search) {
+                    callback(item, search) {
                         // prevent drill-down
                         return (this.getId(item) == search) ? true : null;
                     }
@@ -500,21 +504,22 @@
         },
         // get item path IDs starting from the top parent (ROOT)
         // when `reverse` is TRUE returns the IDs in reverse order
-        pathId: function(item, reverse) {
-            var path = this.path(item, reverse), id = [];
+        pathId(item, reverse) {
+            var path = this.path(item, reverse);
+            var id = [];
             path.each(this.proxy(function(element) {
                 id.push(this.getId($(element)));
             }, true));
             return id;
         },
         // escape string and return RegExp
-        _regexp: function(search) {
+        _regexp(search) {
             return new window.RegExp(window.String(search).replace(/([-()\[\]{}+?*.$\^|,:#<!\\])/g, '\\$1').replace(/\x08/g, '\\x08'), 'i');
         },
         // filter the tree items based on search criteria
         // `options.search` is the keyword
         // `options.first` will be the first matched item (if any)
-        filter: function(item, options) {
+        filter(item, options) {
             options = this._options(options, null, 'filterfail', null, item);
             if (!item || this.isItem(item)) {
                 // a way to cancel the operation
@@ -552,7 +557,7 @@
                         }
                         if (this.isInode(item)) {
                             // continue with the children
-                            task.push(function(complete) {
+                            task.push(complete => {
                                 process(item);
                                 complete();
                             });
@@ -569,7 +574,7 @@
                         this._setFirstLast(parent, this._getFirstLast(parent));
                     }
                 });
-                task.push(function(complete) {
+                task.push(complete => {
                     process(item);
                     complete();
                 });
@@ -578,12 +583,12 @@
             }
         },
         // call the `callback` function (item) for the first item
-        _firstAll: function(callback) {
+        _firstAll(callback) {
             callback.call(this, this.first());
         },
         // call the `callback` function (item) for the last item
         // when `load` is TRUE will also try to load nodes
-        _lastAll: function(item, callback, load) {
+        _lastAll(item, callback, load) {
             if (item) {
                 if (this.isInode(item)) {
                     if (this.wasLoad(item)) {
@@ -591,10 +596,10 @@
                         return;
                     } else if (load) {
                         this.ajaxLoad(item, {
-                            success: function() {
+                            success() {
                                 this._lastAll(this.last(item), callback, load);
                             },
-                            fail: function() {
+                            fail() {
                                 callback.call(this, item);
                             }
                         });
@@ -608,7 +613,7 @@
         },
         // call the `callback` function (item) for the next item from tree
         // when `load` is TRUE will also try to load nodes
-        _nextAll: function(item, callback, load) {
+        _nextAll(item, callback, load) {
             if (item) {
                 if (this.isInode(item)) {
                     if (this.wasLoad(item)) {
@@ -616,10 +621,10 @@
                         return;
                     } else if (load) {
                         this.ajaxLoad(item, {
-                            success: function() {
+                            success() {
                                 callback.call(this, this.first(item));
                             },
-                            fail: function() {
+                            fail() {
                                 this._nextAll(item, callback, load);
                             }
                         });
@@ -651,7 +656,7 @@
         },
         // call the `callback` function (item) for the previous item from tree
         // when `load` is TRUE will also try to load nodes
-        _prevAll: function(item, callback, load) {
+        _prevAll(item, callback, load) {
             if (item) {
                 var prev = this.prev(item);
                 if (prev.length) {
@@ -670,14 +675,14 @@
         },
         // call the `callback` function (item) with the previous found item based on search criteria
         // `search` is the keyword
-        prevMatch: function(item, search, callback) {
+        prevMatch(item, search, callback) {
             var regexp = this._regexp(search);
             this._instance.filter.init();
             var task = new this._task(this._instance.filter, function(complete) {
                 this._instance.filter.destroy();
                 complete();
             });
-            var process = function(item) {
+            var process = item => {
                 task.push(function(complete) {
                     this._prevAll(item, function(item) {
                         if (item) {
@@ -697,14 +702,14 @@
         },
         // call the `callback` function (item) with the next found item based on search criteria
         // `search` is the keyword
-        nextMatch: function(item, search, callback) {
+        nextMatch(item, search, callback) {
             var regexp = this._regexp(search);
             this._instance.filter.init();
             var task = new this._task(this._instance.filter, function(complete) {
                 this._instance.filter.destroy();
                 complete();
             });
-            var process = function(item) {
+            var process = item => {
                 task.push(function(complete) {
                     this._nextAll(item, function(item) {
                         if (item) {
@@ -731,4 +736,4 @@
     // add extra default options
     aciPluginClass.defaults('aciTree', options);
 
-})(jQuery, this);
+}))(jQuery, this);

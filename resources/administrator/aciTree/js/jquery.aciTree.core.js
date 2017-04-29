@@ -73,7 +73,7 @@
  *
  */
 
-(function($, window, undefined) {
+((($, window, undefined) => {
 
     // default options
 
@@ -117,7 +117,7 @@
         // called for each AJAX request when a node needs to be loaded
         // `item` is the item who will be loaded
         // `settings` is the `aciTree.options.ajax` object or an entry from `aciTree.options.dataSource`
-        ajaxHook: function(item, settings) {
+        ajaxHook(item, settings) {
             // the default implementation changes the URL by adding the item ID at the end
             settings.url += (item ? this.getId(item) : '');
         },
@@ -126,14 +126,14 @@
         // `item` is the new created item
         // `itemData` is the object used to create the item
         // `level` is the #0 based item level
-        itemHook: function(parent, item, itemData, level) {
+        itemHook(parent, item, itemData, level) {
             // there is no default implementation
         },
         // called for each item to serialize its value
         // `item` is the tree item to be serialized
         // `what` is the option telling what is being serialized
         // `value` is the current serialized value (from the `item`, value type depending of `what`)
-        serialize: function(item, what, value) {
+        serialize(item, what, value) {
             if (typeof what == 'object') {
                 return value;
             } else {
@@ -147,7 +147,7 @@
 
     var aciTree_core = {
         // add extra data
-        __extend: function() {
+        __extend() {
             $.extend(this._instance, {
                 queue: new this._queue(this, this._instance.options.queue) // the global tree queue
             });
@@ -163,7 +163,7 @@
             });
         },
         // init the treeview
-        init: function(options) {
+        init(options) {
             options = this._options(options);
             // check if was init already
             if (this.wasInit()) {
@@ -196,14 +196,14 @@
                         unique: this._instance.options.unique
                     });
                 }
-            })).on('mouseenter' + this._instance.nameSpace + ' mouseleave' + this._instance.nameSpace, '.aciTreePush', function(e) {
+            })).on('mouseenter' + this._instance.nameSpace + ' mouseleave' + this._instance.nameSpace, '.aciTreePush', e => {
                 // handle the aciTreeHover class
                 var element = e.target;
                 if (!domApi.hasClass(element, 'aciTreePush')) {
                     element = domApi.parentByClass(element, 'aciTreePush');
                 }
                 domApi.toggleClass(element, 'aciTreeHover', e.type == 'mouseenter');
-            }).on('mouseenter' + this._instance.nameSpace + ' mouseleave' + this._instance.nameSpace, '.aciTreeLine', function(e) {
+            }).on('mouseenter' + this._instance.nameSpace + ' mouseleave' + this._instance.nameSpace, '.aciTreeLine', e => {
                 // handle the aciTreeHover class
                 var element = e.target;
                 if (!domApi.hasClass(element, 'aciTreeLine')) {
@@ -231,36 +231,40 @@
             if (this._instance.options.rootData) {
                 // the rootData was set, use it to init the tree
                 this.loadFrom(null, this._inner(options, {
-                    success: success,
-                    fail: fail,
+                    success,
+                    fail,
                     itemData: this._instance.options.rootData
                 }));
             } else if (this._instance.options.ajax.url) {
                 // the AJAX url was set, init with AJAX
                 this.ajaxLoad(null, this._inner(options, {
-                    success: success,
-                    fail: fail
+                    success,
+                    fail
                 }));
             } else {
                 success.apply(this);
             }
         },
-        _initHook: function() {
+        _initHook() {
             // override this to do extra init
         },
         // check locked state
-        isLocked: function() {
+        isLocked() {
             return this._private.locked;
         },
         // get a formatted message
         // `raw` is the raw message text (can contain %NUMBER sequences, replaced with values from `params`)
         // `params` is a list of values to be replaced into the message (by #0 based index)
-        _format: function(raw, params) {
+        _format(raw, params) {
             if (!(params instanceof Array)) {
                 return raw;
             }
             var parts = raw.split(/(%[0-9]+)/gm);
-            var compile = '', part, index, last = false, len;
+            var compile = '';
+            var part;
+            var index;
+            var last = false;
+            var len;
             var test = new window.RegExp('^%[0-9]+$');
             for (var i = 0; i < parts.length; i++) {
                 part = parts[i];
@@ -289,25 +293,25 @@
         // low level DOM functions
         _coreDOM: {
             // set as leaf node
-            leaf: function(items) {
-                domApi.addRemoveListClass(items.toArray(), 'aciTreeLeaf', ['aciTreeInode', 'aciTreeInodeMaybe', 'aciTreeOpen'], function(node) {
+            leaf(items) {
+                domApi.addRemoveListClass(items.toArray(), 'aciTreeLeaf', ['aciTreeInode', 'aciTreeInodeMaybe', 'aciTreeOpen'], node => {
                     node.removeAttribute('aria-expanded');
                 });
             },
             // set as inner node
-            inode: function(items, branch) {
-                domApi.addRemoveListClass(items.toArray(), branch ? 'aciTreeInode' : 'aciTreeInodeMaybe', 'aciTreeLeaf', function(node) {
+            inode(items, branch) {
+                domApi.addRemoveListClass(items.toArray(), branch ? 'aciTreeInode' : 'aciTreeInodeMaybe', 'aciTreeLeaf', node => {
                     node.setAttribute('aria-expanded', false);
                 });
             },
             // set as open/closed
-            toggle: function(items, state) {
-                domApi.toggleListClass(items.toArray(), 'aciTreeOpen', state, function(node) {
+            toggle(items, state) {
+                domApi.toggleListClass(items.toArray(), 'aciTreeOpen', state, node => {
                     node.setAttribute('aria-expanded', state);
                 });
             },
             // set odd/even classes
-            oddEven: function(items, odd) {
+            oddEven(items, odd) {
                 var list = items.toArray();
                 for (var i = 0; i < list.length; i++) {
                     domApi.addRemoveClass(list[i], odd ? 'aciTreeOdd' : 'aciTreeEven', odd ? 'aciTreeEven' : 'aciTreeOdd');
@@ -318,12 +322,16 @@
         // a small queue implementation
         // `context` the context to be used with `callback.call`
         // `options` are the queue options
-        _queue: function(context, options) {
+        _queue(context, options) {
             var locked = false;
-            var fifo = [], fifoAsync = [];
-            var load = 0, loadAsync = 0, schedule = 0, stack = 0;
+            var fifo = [];
+            var fifoAsync = [];
+            var load = 0;
+            var loadAsync = 0;
+            var schedule = 0;
+            var stack = 0;
             // run the queue
-            var run = function() {
+            var run = () => {
                 if (locked) {
                     stack--;
                     return;
@@ -333,7 +341,8 @@
                     stack--;
                     return;
                 }
-                var callback, async = false;
+                var callback;
+                var async = false;
                 if (load < options.async * 2) {
                     // get the next synchronous callback
                     callback = fifo.shift();
@@ -347,7 +356,7 @@
                     // run the callback
                     if (async) {
                         loadAsync++;
-                        callback.call(context, function() {
+                        callback.call(context, () => {
                             loadAsync--;
                         });
                         if (stack < 40) {
@@ -356,7 +365,7 @@
                         }
                     } else {
                         load++;
-                        callback.call(context, function() {
+                        callback.call(context, () => {
                             if (now - schedule > options.interval) {
                                 schedule = now + options.delay;
                             }
@@ -372,9 +381,9 @@
             };
             var interval = [];
             // start the queue
-            var start = function() {
+            var start = () => {
                 for (var i = 0; i < 4; i++) {
-                    interval[i] = window.setInterval(function() {
+                    interval[i] = window.setInterval(() => {
                         if (stack < 20) {
                             stack++;
                             run();
@@ -383,7 +392,7 @@
                 }
             };
             // stop the queue
-            var stop = function() {
+            var stop = () => {
                 for (var i = 0; i < interval.length; i++) {
                     window.clearInterval(interval[i]);
                 }
@@ -408,9 +417,7 @@
                 return this;
             };
             // test if busy
-            this.busy = function() {
-                return (load != 0) || (loadAsync != 0) || (fifo.length != 0) || (fifoAsync.length != 0);
-            };
+            this.busy = () => (load != 0) || (loadAsync != 0) || (fifo.length != 0) || (fifoAsync.length != 0);
             // destroy queue
             this.destroy = function() {
                 locked = true;
@@ -427,14 +434,15 @@
         },
         // used with a `queue` to execute something at the end
         // `endCallback` function (complete) is the callback called at the end
-        _task: function(queue, endCallback) {
-            var counter = 0, finish = false;
+        _task(queue, endCallback) {
+            var counter = 0;
+            var finish = false;
             // push a `callback` function (complete) for later call
-            this.push = function(callback, async) {
+            this.push = (callback, async) => {
                 counter++;
                 queue.push(function(complete) {
                     var context = this;
-                    callback.call(this, function() {
+                    callback.call(this, () => {
                         counter--;
                         if ((counter < 1) && !finish) {
                             finish = true;
@@ -450,7 +458,7 @@
         // `object` the initial options object
         // _success, _fail, _notify are callbacks or string (the event name to be triggered)
         // `item` is the item to trigger events for
-        _options: function(object, _success, _fail, _notify, item) {
+        _options(object, _success, _fail, _notify, item) {
             // options object (need to be in this form for all API functions
             // that have the `options` parameter, not all properties are required)
             var options = $.extend({
@@ -478,9 +486,9 @@
             if (success) {
                 // success callback
                 if (object && object.success) {
-                    options.success = function() {
-                        success.apply(this, arguments);
-                        object.success.apply(this, arguments);
+                    options.success = function(...args) {
+                        success.apply(this, args);
+                        object.success.apply(this, args);
                     };
                 } else {
                     options.success = success;
@@ -489,9 +497,9 @@
             if (fail) {
                 // fail callback
                 if (object && object.fail) {
-                    options.fail = function() {
-                        fail.apply(this, arguments);
-                        object.fail.apply(this, arguments);
+                    options.fail = function(...args) {
+                        fail.apply(this, args);
+                        object.fail.apply(this, args);
                     };
                 } else {
                     options.fail = fail;
@@ -500,14 +508,14 @@
             if (notify) {
                 // notify callback
                 if (object && object.notify) {
-                    options.notify = function() {
-                        notify.apply(this, arguments);
-                        object.notify.apply(this, arguments);
+                    options.notify = function(...args) {
+                        notify.apply(this, args);
+                        object.notify.apply(this, args);
                     };
                 } else if (!options.notify && object && object.success) {
-                    options.notify = function() {
-                        notify.apply(this, arguments);
-                        object.success.apply(this, arguments);
+                    options.notify = function(...args) {
+                        notify.apply(this, args);
+                        object.success.apply(this, args);
                     };
                 } else {
                     options.notify = notify;
@@ -520,7 +528,7 @@
         },
         // helper for passing `options` object to inner methods
         // the callbacks are removed and `override` can be used to update properties
-        _inner: function(options, override) {
+        _inner(options, override) {
             // removing success/fail/notify from options
             return $.extend({
             }, options, {
@@ -531,7 +539,7 @@
             override);
         },
         // trigger the aciTree events on the tree container
-        _trigger: function(item, eventName, options) {
+        _trigger(item, eventName, options) {
             var event = $.Event('acitree');
             if (!options) {
                 options = this._options();
@@ -540,25 +548,25 @@
             return !event.isDefaultPrevented();
         },
         // call on success
-        _success: function(item, options) {
+        _success(item, options) {
             if (options && options.success) {
                 options.success.call(this, item, options);
             }
         },
         // call on fail
-        _fail: function(item, options) {
+        _fail(item, options) {
             if (options && options.fail) {
                 options.fail.call(this, item, options);
             }
         },
         // call on notify (should be same as `success` but called when already in the requested state)
-        _notify: function(item, options) {
+        _notify(item, options) {
             if (options && options.notify) {
                 options.notify.call(this, item, options);
             }
         },
         // delay callback on busy item
-        _delayBusy: function(item, callback) {
+        _delayBusy(item, callback) {
             if ((this._private.delayBusy < 10) && this.isBusy(item)) {
                 this._private.delayBusy++;
                 window.setTimeout(this.proxy(function() {
@@ -571,7 +579,7 @@
         },
         // return the data source for item
         // defaults to `aciTree.options.ajax` if not set on the item/his parents
-        _dataSource: function(item) {
+        _dataSource(item) {
             var dataSource = this._instance.options.dataSource;
             if (dataSource) {
                 var data = this.itemData(item);
@@ -593,7 +601,7 @@
         // `item` can be NULL to load the ROOT
         // loaded data need to be array of item objects
         // each item can have children (defined as `itemData.branch` - array of item data objects)
-        ajaxLoad: function(item, options) {
+        ajaxLoad(item, options) {
             if (item && this.isBusy(item)) {
                 // delay the load if busy
                 this._delayBusy(item, function() {
@@ -643,11 +651,11 @@
                                 } else {
                                     // create a branch from `itemList`
                                     this._createBranch(item, this._inner(options, {
-                                        success: function() {
+                                        success() {
                                             this._success(item, options);
                                             complete();
                                         },
-                                        fail: function() {
+                                        fail() {
                                             this._fail(item, options);
                                             complete();
                                         },
@@ -696,7 +704,7 @@
         // `item` can be NULL to load the ROOT
         // `options.itemData` need to be array of item objects
         // each item can have children (defined as `itemData.branch` - array of item data objects)
-        loadFrom: function(item, options) {
+        loadFrom(item, options) {
             if (item && this.isBusy(item)) {
                 // delay the load if busy
                 this._delayBusy(item, function() {
@@ -763,7 +771,7 @@
         },
         // unload item
         // `item` can be NULL to unload the entire tree
-        unload: function(item, options) {
+        unload(item, options) {
             options = this._options(options, function() {
                 this._loading(item);
                 this._trigger(item, 'unloaded', options);
@@ -838,7 +846,7 @@
                     if (this.isOpen(item)) {
                         // first close the item, then remove children
                         this.close(item, this._inner(options, {
-                            success: function() {
+                            success() {
                                 process.call(this);
                                 this._removeContainer(item);
                                 this._success(item, options);
@@ -863,7 +871,7 @@
             }
         },
         // remove item
-        remove: function(item, options) {
+        remove(item, options) {
             if (this.isItem(item)) {
                 if (this.hasSiblings(item, true)) {
                     options = this._options(options, function() {
@@ -882,7 +890,7 @@
                     if (this.wasLoad(item)) {
                         // unload the inode then remove
                         this.unload(item, this._inner(options, {
-                            success: function() {
+                            success() {
                                 this._success(item, options);
                                 this._removeItem(item);
                             },
@@ -907,7 +915,7 @@
             }
         },
         // open item children
-        _openChildren: function(item, options) {
+        _openChildren(item, options) {
             if (options.expand) {
                 var queue = this._instance.queue;
                 // process the children inodes
@@ -928,7 +936,7 @@
             }
         },
         // process item open
-        _openItem: function(item, options) {
+        _openItem(item, options) {
             if (!options.unanimated && !this.isVisible(item)) {
                 options.unanimated = true;
             }
@@ -946,7 +954,7 @@
             });
         },
         // open item and his children if requested
-        open: function(item, options) {
+        open(item, options) {
             options = this._options(options, function() {
                 if (this.isOpenPath(item)) {
                     // if all parents are open, update the items after
@@ -971,7 +979,7 @@
                     } else {
                         // try to load the node, then open
                         this.ajaxLoad(item, this._inner(options, {
-                            success: function() {
+                            success() {
                                 this._openItem(item, options);
                             },
                             fail: options.fail
@@ -983,7 +991,7 @@
             }
         },
         // close item children
-        _closeChildren: function(item, options) {
+        _closeChildren(item, options) {
             if (this._instance.options.empty) {
                 // unload on close
                 options.unanimated = true;
@@ -1010,7 +1018,7 @@
             }
         },
         // process item close
-        _closeItem: function(item, options) {
+        _closeItem(item, options) {
             if (!options.unanimated && !this.isVisible(item)) {
                 options.unanimated = true;
             }
@@ -1021,7 +1029,7 @@
             });
         },
         // close item and his children if requested
-        close: function(item, options) {
+        close(item, options) {
             options = this._options(options, function() {
                 if (this.isOpenPath(item)) {
                     // if all parents are open, update the items after
@@ -1050,7 +1058,7 @@
             }
         },
         // update visible state
-        _updateVisible: function(item) {
+        _updateVisible(item) {
             if (this.isOpenPath(item)) {
                 if (!this.isHidden(item)) {
                     // if open parents and not hidden
@@ -1064,19 +1072,15 @@
                         }));
                     } else {
                         // children are not visible
-                        domApi.children(item[0], true, function(node) {
-                            return domApi.removeClass(node, 'aciTreeVisible') ? true : null;
-                        });
+                        domApi.children(item[0], true, node => domApi.removeClass(node, 'aciTreeVisible') ? true : null);
                     }
                 }
             } else if (domApi.removeClass(item[0], 'aciTreeVisible')) {
-                domApi.children(item[0], true, function(node) {
-                    return domApi.removeClass(node, 'aciTreeVisible') ? true : null;
-                });
+                domApi.children(item[0], true, node => domApi.removeClass(node, 'aciTreeVisible') ? true : null);
             }
         },
         // keep just one branch open
-        closeOthers: function(item, options) {
+        closeOthers(item, options) {
             options = this._options(options);
             if (this.isItem(item)) {
                 var queue = this._instance.queue;
@@ -1100,7 +1104,7 @@
             }
         },
         // toggle item
-        toggle: function(item, options) {
+        toggle(item, options) {
             options = this._options(options, 'toggled', 'togglefail', null, item);
             if (this.isInode(item)) {
                 // a way to cancel the operation
@@ -1119,9 +1123,10 @@
         },
         // get item path starting from the top parent (ROOT)
         // when `reverse` is TRUE returns the path in reverse order
-        path: function(item, reverse) {
+        path(item, reverse) {
             if (item) {
-                var parent = item[0], list = [];
+                var parent = item[0];
+                var list = [];
                 while (parent = domApi.parent(parent)) {
                     list.push(parent);
                 }
@@ -1131,7 +1136,7 @@
         },
         // test if item is in view
         // when `center` is TRUE will test if is centered in view
-        isVisible: function(item, center) {
+        isVisible(item, center) {
             if (item && domApi.hasClass(item[0], 'aciTreeVisible')) {
                 // the item path need to be open
                 var rect = this._instance.jQuery[0].getBoundingClientRect();
@@ -1148,7 +1153,7 @@
             return false;
         },
         // open path to item
-        openPath: function(item, options) {
+        openPath(item, options) {
             options = this._options(options);
             if (this.isItem(item)) {
                 var queue = this._instance.queue;
@@ -1170,7 +1175,7 @@
             }
         },
         // test if path to item is open
-        isOpenPath: function(item) {
+        isOpenPath(item) {
             var parent = this.parent(item);
             return parent[0] ? this.isOpen(parent) && domApi.hasClass(parent[0], 'aciTreeVisible') : true;
         },
@@ -1178,7 +1183,7 @@
         // `speed` is the raw speed
         // `totalSize` is the available size
         // `required` is the offset used for calculations
-        _speedFraction: function(speed, totalSize, required) {
+        _speedFraction(speed, totalSize, required) {
             if ((required < totalSize) && totalSize) {
                 var numeric = parseInt(speed);
                 if (isNaN(numeric)) {
@@ -1203,7 +1208,7 @@
         },
         // bring item in view
         // `options.center` says if should be centered in view
-        setVisible: function(item, options) {
+        setVisible(item, options) {
             options = this._options(options, 'visible', 'visiblefail', 'wasvisible', item);
             if (this.isItem(item)) {
                 // a way to cancel the operation
@@ -1277,22 +1282,22 @@
             }
         },
         // test if item has parent
-        hasParent: function(item) {
+        hasParent(item) {
             return this.parent(item).length > 0;
         },
         // get item parent
-        parent: function(item) {
+        parent(item) {
             return item ? $(domApi.parent(item[0])) : $([]);
         },
         // get item top (ROOT) parent
-        topParent: function(item) {
+        topParent(item) {
             return this.path(item).eq(0);
         },
         // create tree branch
         // `options.itemData` need to be in the same format as for .append
-        _createBranch: function(item, options) {
+        _createBranch(item, options) {
             var total = 0;
-            var count = function(itemList) {
+            var count = itemList => {
                 var itemData;
                 for (var i = 0; i < itemList.length; i++) {
                     itemData = itemList[i];
@@ -1317,7 +1322,7 @@
                 }
                 // use .append to add new items
                 this.append(node, this._inner(options, {
-                    success: function(item, options) {
+                    success(item, options) {
                         var itemData;
                         for (var i = 0; i < options.itemData.length; i++) {
                             itemData = options.itemData[i];
@@ -1342,14 +1347,14 @@
             process(item, options.itemData);
         },
         // get first/last items
-        _getFirstLast: function(parent) {
+        _getFirstLast(parent) {
             if (!parent) {
                 parent = this._instance.jQuery;
             }
             return $(domApi.withAnyClass(domApi.children(parent[0]), ['aciTreeFirst', 'aciTreeLast']));
         },
         // update first/last items
-        _setFirstLast: function(parent, clear) {
+        _setFirstLast(parent, clear) {
             if (clear) {
                 domApi.removeListClass(clear.toArray(), ['aciTreeFirst', 'aciTreeLast']);
             }
@@ -1360,7 +1365,7 @@
             }
         },
         // update odd/even state
-        _setOddEven: function(items) {
+        _setOddEven(items) {
             // consider only visible items
             var visible;
             if (this._instance.jQuery[0].getElementsByClassName) {
@@ -1406,20 +1411,20 @@
             this._coreDOM.oddEven($(visible), odd);
         },
         // update odd/even state for direct children
-        _setOddEvenChildren: function(item) {
+        _setOddEvenChildren(item) {
             var odd = domApi.hasClass(item[0], 'aciTreeOdd');
             var children = this.children(item);
             this._coreDOM.oddEven(children, !odd);
         },
         // process item before inserting into the DOM
-        _itemHook: function(parent, item, itemData, level) {
+        _itemHook(parent, item, itemData, level) {
             if (this._instance.options.itemHook) {
                 this._instance.options.itemHook.apply(this, arguments);
             }
         },
         // create item by `itemData`
         // `level` is the #0 based item level
-        _createItem: function(itemData, level) {
+        _createItem(itemData, level) {
             if (this._private.itemClone[level]) {
                 var li = this._private.itemClone[level].cloneNode(true);
                 var icon = li.firstChild;
@@ -1436,7 +1441,8 @@
                 var line = window.document.createElement('DIV');
                 li.appendChild(line);
                 line.className = 'aciTreeLine';
-                var last = line, branch;
+                var last = line;
+                var branch;
                 for (var i = 0; i < level; i++) {
                     branch = window.document.createElement('DIV');
                     last.appendChild(branch);
@@ -1484,7 +1490,7 @@
             return $li;
         },
         // remove item
-        _removeItem: function(item) {
+        _removeItem(item) {
             var parent = this.parent(item);
             item.remove();
             // update sibling state
@@ -1495,8 +1501,9 @@
         // `itemData` need to be array of objects or just an object (one item)
         // `level` is the #0 based level
         // `callback` function (items) is called at the end of the operation
-        _createItems: function(ul, before, after, itemData, level, callback) {
-            var items = [], fragment = window.document.createDocumentFragment();
+        _createItems(ul, before, after, itemData, level, callback) {
+            var items = [];
+            var fragment = window.document.createDocumentFragment();
             var task = new this._task(this._instance.queue, function(complete) {
                 items = $(items);
                 if (items.length) {
@@ -1525,7 +1532,7 @@
                 if (itemData instanceof Array) {
                     // this is a list of items
                     for (var i = 0; i < itemData.length; i++) {
-                        (function(itemData) {
+                        ((itemData => {
                             task.push(function(complete) {
                                 var item = this._createItem(itemData, level);
                                 this._itemHook(parent, item, itemData, level);
@@ -1533,7 +1540,7 @@
                                 items.push(item[0]);
                                 complete();
                             });
-                        })(itemData[i]);
+                        }))(itemData[i]);
                     }
                 } else {
                     task.push(function(complete) {
@@ -1547,12 +1554,12 @@
                 }
             }
             // run at least once
-            task.push(function(complete) {
+            task.push(complete => {
                 complete();
             });
         },
         // create children container
-        _createContainer: function(item) {
+        _createContainer(item) {
             if (!item) {
                 item = this._instance.jQuery;
             }
@@ -1568,7 +1575,7 @@
             return $(ul);
         },
         // remove children container
-        _removeContainer: function(item) {
+        _removeContainer(item) {
             if (!item) {
                 item = this._instance.jQuery;
             }
@@ -1578,7 +1585,7 @@
         // append one or more items to item
         // `options.itemData` can be a item object or array of item objects
         // `options.items` will keep a list of added items
-        append: function(item, options) {
+        append(item, options) {
             options = this._options(options, 'appended', 'appendfail', null, item);
             if (item) {
                 if (this.isInode(item)) {
@@ -1644,7 +1651,7 @@
         // insert one or more items before item
         // `options.itemData` can be a item object or array of item objects
         // `options.items` will keep a list of added items
-        before: function(item, options) {
+        before(item, options) {
             options = this._options(options, 'before', 'beforefail', null, item);
             if (this.isItem(item)) {
                 // a way to cancel the operation
@@ -1682,7 +1689,7 @@
         // insert one or more items after item
         // `options.itemData` can be a item object or array of item objects
         // `options.items` will keep a list of added items
-        after: function(item, options) {
+        after(item, options) {
             options = this._options(options, 'after', 'afterfail', null, item);
             if (this.isItem(item)) {
                 // a way to cancel the operation
@@ -1718,7 +1725,7 @@
             }
         },
         // get item having the element
-        itemFrom: function(element) {
+        itemFrom(element) {
             if (element) {
                 var item = $(element);
                 if (item[0] === this._instance.jQuery[0]) {
@@ -1732,14 +1739,14 @@
         // get item children
         // if `branch` is TRUE then all children are returned
         // if `hidden` is TRUE then the hidden items will be considered too
-        children: function(item, branch, hidden) {
+        children(item, branch, hidden) {
             return $(domApi.children(item && item[0] ? item[0] : this._instance.jQuery[0], branch, hidden ? null : function(node) {
                 return this.hasClass(node, 'aciTreeHidden') ? null : true;
             }));
         },
         // filter only the visible items (items with all parents opened)
         // if `view` is TRUE then only the items in view are returned
-        visible: function(items, view) {
+        visible(items, view) {
             var list = domApi.withClass(items.toArray(), 'aciTreeVisible');
             if (view) {
                 var filter = [];
@@ -1754,7 +1761,7 @@
         },
         // filter only inner nodes from items
         // if `state` is set then filter only open/closed ones
-        inodes: function(items, state) {
+        inodes(items, state) {
             if (state !== undefined) {
                 if (state) {
                     return $(domApi.withClass(items.toArray(), 'aciTreeOpen'));
@@ -1765,26 +1772,26 @@
             return $(domApi.withAnyClass(items.toArray(), ['aciTreeInode', 'aciTreeInodeMaybe']));
         },
         // filter only leaf nodes from items
-        leaves: function(items) {
+        leaves(items) {
             return $(domApi.withClass(items.toArray(), 'aciTreeLeaf'));
         },
         // test if is a inner node
-        isInode: function(item) {
+        isInode(item) {
             return item && domApi.hasAnyClass(item[0], ['aciTreeInode', 'aciTreeInodeMaybe']);
         },
         // test if is a leaf node
-        isLeaf: function(item) {
+        isLeaf(item) {
             return item && domApi.hasClass(item[0], 'aciTreeLeaf');
         },
         // test if item was loaded
-        wasLoad: function(item) {
+        wasLoad(item) {
             if (item) {
                 return domApi.container(item[0]) !== null;
             }
             return domApi.container(this._instance.jQuery[0]) !== null;
         },
         // set item as inner node
-        setInode: function(item, options) {
+        setInode(item, options) {
             options = this._options(options, 'inodeset', 'inodefail', 'wasinode', item);
             if (this.isItem(item)) {
                 // a way to cancel the operation
@@ -1803,7 +1810,7 @@
             }
         },
         // set item as leaf node
-        setLeaf: function(item, options) {
+        setLeaf(item, options) {
             options = this._options(options, 'leafset', 'leaffail', 'wasleaf', item);
             if (this.isItem(item)) {
                 // a way to cancel the operation
@@ -1835,7 +1842,7 @@
         // add/update item icon
         // `options.icon` can be the CSS class name or array['CSS class name', background-position-x, background-position-y]
         // `options.oldIcon` will keep the old icon
-        addIcon: function(item, options) {
+        addIcon(item, options) {
             options = this._options(options, 'iconadded', 'addiconfail', 'wasicon', item);
             if (this.isItem(item)) {
                 // a way to cancel the operation
@@ -1873,7 +1880,7 @@
         },
         // remove item icon
         // options.oldIcon will keep the old icon
-        removeIcon: function(item, options) {
+        removeIcon(item, options) {
             options = this._options(options, 'iconremoved', 'removeiconfail', 'noticon', item);
             if (this.isItem(item)) {
                 // a way to cancel the operation
@@ -1899,18 +1906,18 @@
             }
         },
         // test if item has icon
-        hasIcon: function(item) {
+        hasIcon(item) {
             return !!this.getIcon(item);
         },
         // get item icon
-        getIcon: function(item) {
+        getIcon(item) {
             var data = this.itemData(item);
             return data ? data.icon : null;
         },
         // set item label
         // `options.label` is the new label
         // `options.oldLabel` will keep the old label
-        setLabel: function(item, options) {
+        setLabel(item, options) {
             options = this._options(options, 'labelset', 'labelfail', 'waslabel', item);
             if (this.isItem(item)) {
                 // a way to cancel the operation
@@ -1935,7 +1942,7 @@
             }
         },
         // disable item
-        disable: function(item, options) {
+        disable(item, options) {
             options = this._options(options, 'disabled', 'disablefail', 'wasdisabled', item);
             if (this.isItem(item)) {
                 // a way to cancel the operation
@@ -1954,19 +1961,19 @@
             }
         },
         // test if item is disabled
-        isDisabled: function(item) {
+        isDisabled(item) {
             return item && domApi.hasClass(item[0], 'aciTreeDisabled');
         },
         // test if any of parents are disabled
-        isDisabledPath: function(item) {
+        isDisabledPath(item) {
             return domApi.withClass(this.path(item).toArray(), 'aciTreeDisabled').length > 0;
         },
         // filter only the disabled items
-        disabled: function(items) {
+        disabled(items) {
             return $(domApi.withClass(items.toArray(), 'aciTreeDisabled'));
         },
         // enable item
-        enable: function(item, options) {
+        enable(item, options) {
             options = this._options(options, 'enabled', 'enablefail', 'wasenabled', item);
             if (this.isItem(item)) {
                 // a way to cancel the operation
@@ -1985,19 +1992,19 @@
             }
         },
         // test if item is enabled
-        isEnabled: function(item) {
+        isEnabled(item) {
             return item && !domApi.hasClass(item[0], 'aciTreeDisabled');
         },
         // test if all parents are enabled
-        isEnabledPath: function(item) {
+        isEnabledPath(item) {
             return domApi.withClass(this.path(item).toArray(), 'aciTreeDisabled').length == 0;
         },
         // filter only the enabled items
-        enabled: function(items) {
+        enabled(items) {
             return $(domApi.withClass(items.toArray(), null, 'aciTreeDisabled'));
         },
         // set item as hidden
-        hide: function(item, options) {
+        hide(item, options) {
             options = this._options(options, 'hidden', 'hidefail', 'washidden', item);
             if (this.isItem(item)) {
                 // a way to cancel the operation
@@ -2022,16 +2029,16 @@
             }
         },
         // test if item is hidden
-        isHidden: function(item) {
+        isHidden(item) {
             return item && domApi.hasClass(item[0], 'aciTreeHidden');
         },
         // test if any of parents are hidden
-        isHiddenPath: function(item) {
+        isHiddenPath(item) {
             var parent = this.parent(item);
             return parent[0] && domApi.hasClass(parent[0], 'aciTreeHidden');
         },
         // update hidden state
-        _updateHidden: function(item) {
+        _updateHidden(item) {
             if (this.isHiddenPath(item)) {
                 if (!this.isHidden(item)) {
                     domApi.addClass(item[0], 'aciTreeHidden');
@@ -2042,11 +2049,11 @@
             }
         },
         // filter only the hidden items
-        hidden: function(items) {
+        hidden(items) {
             return $(domApi.withClass(items.toArray(), 'aciTreeHidden'));
         },
         // show hidden item
-        _showHidden: function(item) {
+        _showHidden(item) {
             var parent = null;
             this.path(item).add(item).each(this.proxy(function(element) {
                 var item = $(element);
@@ -2062,7 +2069,7 @@
             }, true));
         },
         // show hidden item
-        show: function(item, options) {
+        show(item, options) {
             options = this._options(options, 'shown', 'showfail', 'wasshown', item);
             if (this.isItem(item)) {
                 // a way to cancel the operation
@@ -2084,57 +2091,57 @@
             }
         },
         // test if item is open
-        isOpen: function(item) {
+        isOpen(item) {
             return item && domApi.hasClass(item[0], 'aciTreeOpen');
         },
         // test if item is closed
-        isClosed: function(item) {
+        isClosed(item) {
             return item && !domApi.hasClass(item[0], 'aciTreeOpen');
         },
         // test if item has children
         // if `hidden` is TRUE then the hidden items will be considered too
-        hasChildren: function(item, hidden) {
+        hasChildren(item, hidden) {
             return this.children(item, false, hidden).length > 0;
         },
         // test if item has siblings
         // if `hidden` is TRUE then the hidden items will be considered too
-        hasSiblings: function(item, hidden) {
+        hasSiblings(item, hidden) {
             return this.siblings(item, hidden).length > 0;
         },
         // test if item has another before
         // if `hidden` is TRUE then the hidden items will be considered too
-        hasPrev: function(item, hidden) {
+        hasPrev(item, hidden) {
             return this.prev(item, hidden).length > 0;
         },
         // test if item has another after
         // if `hidden` is TRUE then the hidden items will be considered too
-        hasNext: function(item, hidden) {
+        hasNext(item, hidden) {
             return this.next(item, hidden).length > 0;
         },
         // get item siblings
         // if `hidden` is TRUE then the hidden items will be considered too
-        siblings: function(item, hidden) {
+        siblings(item, hidden) {
             return item ? $(domApi.children(item[0].parentNode.parentNode, false, function(node) {
                 return (node != item[0]) && (hidden || !this.hasClass(node, 'aciTreeHidden'));
             })) : $([]);
         },
         // get previous item
         // if `hidden` is TRUE then the hidden items will be considered too
-        prev: function(item, hidden) {
+        prev(item, hidden) {
             return item ? $(domApi.prev(item[0], hidden ? null : function(node) {
                 return !this.hasClass(node, 'aciTreeHidden');
             })) : $([]);
         },
         // get next item
         // if `hidden` is TRUE then the hidden items will be considered too
-        next: function(item, hidden) {
+        next(item, hidden) {
             return item ? $(domApi.next(item[0], hidden ? null : function(node) {
                 return !this.hasClass(node, 'aciTreeHidden');
             })) : $([]);
         },
         // get item level - starting from 0
         // return -1 for invalid items
-        level: function(item) {
+        level(item) {
             var level = -1;
             if (item) {
                 var node = item[0];
@@ -2146,18 +2153,18 @@
             return level;
         },
         // get item ID
-        getId: function(item) {
+        getId(item) {
             var data = this.itemData(item);
             return data ? data.id : null;
         },
         // get item data
-        itemData: function(item) {
+        itemData(item) {
             return item ? item.data('itemData' + this._instance.nameSpace) : null;
         },
         // set item ID
         // `options.id` is the new item ID
         // `options.oldId` will keep the old ID
-        setId: function(item, options) {
+        setId(item, options) {
             options = this._options(options, 'idset', 'idfail', 'wasid', item);
             if (this.isItem(item)) {
                 // a way to cancel the operation
@@ -2180,7 +2187,7 @@
             }
         },
         // get item index - starting from #0
-        getIndex: function(item) {
+        getIndex(item) {
             if (item && item[0]) {
                 if (window.Array.prototype.indexOf) {
                     return window.Array.prototype.indexOf.call(item[0].parentNode.childNodes, item[0]);
@@ -2198,7 +2205,7 @@
         // set item index - #0 based
         // `options.index` is the new index
         // `options.oldIndex` will keep the old index
-        setIndex: function(item, options) {
+        setIndex(item, options) {
             options = this._options(options, 'indexset', 'indexfail', 'wasindex', item);
             if (this.isItem(item)) {
                 var oldIndex = this.getIndex(item);
@@ -2236,19 +2243,19 @@
             }
         },
         // get item label
-        getLabel: function(item) {
+        getLabel(item) {
             var data = this.itemData(item);
             return data ? data.label : null;
         },
         // test if is valid item
-        isItem: function(item) {
+        isItem(item) {
             return item && domApi.hasClass(item[0], 'aciTreeLi');
         },
         // item animation
         // `state` if TRUE then show, FALSE then hide
         // `unanimated` if TRUE then don't use animations
         // `callback` function () to call at the end
-        _animate: function(item, state, unanimated, callback) {
+        _animate(item, state, unanimated, callback) {
             if (!item) {
                 item = this._instance.jQuery;
             }
@@ -2278,7 +2285,7 @@
         },
         // get first children of item
         // if `hidden` is TRUE then the hidden items will be considered too
-        first: function(item, hidden) {
+        first(item, hidden) {
             if (!item) {
                 item = this._instance.jQuery;
             }
@@ -2288,7 +2295,7 @@
         },
         // test if item is the first one for his parent
         // if `hidden` is TRUE then the hidden items will be considered too
-        isFirst: function(item, hidden) {
+        isFirst(item, hidden) {
             if (item) {
                 var parent = domApi.parent(item[0]);
                 return this.first(parent ? $(parent) : null, hidden)[0] == item[0];
@@ -2297,7 +2304,7 @@
         },
         // get last children of item
         // if `hidden` is TRUE then the hidden items will be considered too
-        last: function(item, hidden) {
+        last(item, hidden) {
             if (!item) {
                 item = this._instance.jQuery;
             }
@@ -2307,7 +2314,7 @@
         },
         // test if item is the last one for his parent
         // if `hidden` is TRUE then the hidden items will be considered too
-        isLast: function(item, hidden) {
+        isLast(item, hidden) {
             if (item) {
                 var parent = domApi.parent(item[0]);
                 return this.last(parent ? $(parent) : null, hidden)[0] == item[0];
@@ -2315,7 +2322,7 @@
             return false;
         },
         // test if item is busy/loading
-        isBusy: function(item) {
+        isBusy(item) {
             if (item) {
                 return domApi.hasClass(item[0], 'aciTreeLoad');
             } else {
@@ -2323,7 +2330,7 @@
             }
         },
         // set loading state
-        _loading: function(item, state) {
+        _loading(item, state) {
             if (item) {
                 domApi.toggleClass(item[0], 'aciTreeLoad', state);
                 if (state) {
@@ -2336,7 +2343,7 @@
             }
         },
         // show loader image
-        _loader: function(show) {
+        _loader(show) {
             if (show || this.isBusy()) {
                 if (!this._private.loaderInterval) {
                     this._private.loaderInterval = window.setInterval(this.proxy(function() {
@@ -2351,21 +2358,21 @@
             }
         },
         // test if parent has children
-        isChildren: function(parent, children) {
+        isChildren(parent, children) {
             if (!parent) {
                 parent = this._instance.jQuery;
             }
             return children && (parent.has(children).length > 0);
         },
         // test if parent has immediate children
-        isImmediateChildren: function(parent, children) {
+        isImmediateChildren(parent, children) {
             if (!parent) {
                 parent = this._instance.jQuery;
             }
             return children && parent.children('.aciTreeUl').children('.aciTreeLi').is(children);
         },
         // test if items share the same parent
-        sameParent: function(item1, item2) {
+        sameParent(item1, item2) {
             if (item1 && item2) {
                 var parent1 = this.parent(item1);
                 var parent2 = this.parent(item2);
@@ -2374,7 +2381,7 @@
             return false;
         },
         // test if items share the same top parent
-        sameTopParent: function(item1, item2) {
+        sameTopParent(item1, item2) {
             if (item1 && item2) {
                 var parent1 = this.topParent(item1);
                 var parent2 = this.topParent(item2);
@@ -2384,7 +2391,7 @@
         },
         // return the updated item data
         // `callback` function (item) called for each item
-        _serialize: function(item, callback) {
+        _serialize(item, callback) {
             var data = this.itemData(item);
             if (this.isInode(item)) {
                 data.inode = true;
@@ -2439,7 +2446,7 @@
         },
         // return serialized data
         // `callback` function (item, what, value) - see `aciTree.options.serialize`
-        serialize: function(item, what, callback) {
+        serialize(item, what, callback) {
             // override this to provide serialized data
             if (typeof what == 'object') {
                 if (item) {
@@ -2473,7 +2480,7 @@
             return '';
         },
         // destroy the control
-        destroy: function(options) {
+        destroy(options) {
             options = this._options(options);
             // check if was init
             if (!this.wasInit()) {
@@ -2513,7 +2520,7 @@
                     this._trigger(null, 'destroyed', options);
                     this._success(null, options);
                 }),
-                fail: function() {
+                fail() {
                     this._instance.jQuery.removeClass('aciTreeLoad');
                     this._private.locked = false;
                     this._trigger(null, 'destroyfail', options);
@@ -2521,7 +2528,7 @@
                 }
             }));
         },
-        _destroyHook: function(unloaded) {
+        _destroyHook(unloaded) {
             // override this to do extra destroy before/after unload
         }
 
@@ -2536,4 +2543,4 @@
     // for internal access
     var domApi = aciPluginClass.plugins.aciTree_dom;
 
-})(jQuery, this);
+}))(jQuery, this);

@@ -28,7 +28,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
  * ======================================================================== */
 
 
-+function ($) { "use strict";
++($ => { "use strict";
 
   // CSS TRANSITION SUPPORT (Shoutout: http://www.modernizr.com/)
   // ============================================================
@@ -52,18 +52,19 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 
   // http://blog.alexmaccaw.com/css-transitions
   $.fn.emulateTransitionEnd = function (duration) {
-    var called = false, $el = this
-    $(this).one($.support.transition.end, function () { called = true })
-    var callback = function () { if (!called) $($el).trigger($.support.transition.end) }
+    var called = false;
+    var $el = this;
+    $(this).one($.support.transition.end, () => { called = true })
+    var callback = () => { if (!called) $($el).trigger($.support.transition.end) }
     setTimeout(callback, duration)
     return this
   }
 
-  $(function () {
+  $(() => {
     $.support.transition = transitionEnd()
   })
 
-}(jQuery);
+})(jQuery);
 
 /* ========================================================================
  * Bootstrap: alert.js v3.0.2
@@ -85,7 +86,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
  * ======================================================================== */
 
 
-+function ($) { "use strict";
++($ => { "use strict";
 
   // ALERT CLASS DEFINITION
   // ======================
@@ -162,7 +163,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 
   $(document).on('click.bs.alert.data-api', dismiss, Alert.prototype.close)
 
-}(jQuery);
+})(jQuery);
 
 /* ========================================================================
  * Bootstrap: button.js v3.0.2
@@ -184,7 +185,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
  * ======================================================================== */
 
 
-+function ($) { "use strict";
++($ => { "use strict";
 
   // BUTTON PUBLIC CLASS DEFINITION
   // ==============================
@@ -211,7 +212,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
     $el[val](data[state] || this.options[state])
 
     // push to event loop to allow forms to submit
-    setTimeout(function () {
+    setTimeout(() => {
       state == 'loadingText' ?
         $el.addClass(d).attr(d, d) :
         $el.removeClass(d).removeAttr(d);
@@ -265,14 +266,14 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
   // BUTTON DATA-API
   // ===============
 
-  $(document).on('click.bs.button.data-api', '[data-toggle^=button]', function (e) {
+  $(document).on('click.bs.button.data-api', '[data-toggle^=button]', e => {
     var $btn = $(e.target)
     if (!$btn.hasClass('btn')) $btn = $btn.closest('.btn')
     $btn.button('toggle')
     e.preventDefault()
   })
 
-}(jQuery);
+})(jQuery);
 
 /* ========================================================================
  * Bootstrap: carousel.js v3.0.2
@@ -294,7 +295,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
  * ======================================================================== */
 
 
-+function ($) { "use strict";
++($ => { "use strict";
 
   // CAROUSEL CLASS DEFINITION
   // =========================
@@ -345,7 +346,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 
     if (pos > (this.$items.length - 1) || pos < 0) return
 
-    if (this.sliding)       return this.$element.one('slid', function () { that.to(pos) })
+    if (this.sliding)       return this.$element.one('slid', () => { that.to(pos) });
     if (activeIndex == pos) return this.pause().cycle()
 
     return this.slide(pos > activeIndex ? 'next' : 'prev', $(this.$items[pos]))
@@ -391,13 +392,13 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 
     isCycling && this.pause()
 
-    var e = $.Event('slide.bs.carousel', { relatedTarget: $next[0], direction: direction })
+    var e = $.Event('slide.bs.carousel', { relatedTarget: $next[0], direction })
 
     if ($next.hasClass('active')) return
 
     if (this.$indicators.length) {
       this.$indicators.find('.active').removeClass('active')
-      this.$element.one('slid', function () {
+      this.$element.one('slid', () => {
         var $nextIndicator = $(that.$indicators.children()[that.getActiveIndex()])
         $nextIndicator && $nextIndicator.addClass('active')
       })
@@ -411,11 +412,11 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
       $active.addClass(direction)
       $next.addClass(direction)
       $active
-        .one($.support.transition.end, function () {
+        .one($.support.transition.end, () => {
           $next.removeClass([type, direction].join(' ')).addClass('active')
           $active.removeClass(['active', direction].join(' '))
           that.sliding = false
-          setTimeout(function () { that.$element.trigger('slid') }, 0)
+          setTimeout(() => { that.$element.trigger('slid') }, 0)
         })
         .emulateTransitionEnd(600)
     } else {
@@ -468,7 +469,8 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
   // =================
 
   $(document).on('click.bs.carousel.data-api', '[data-slide], [data-slide-to]', function (e) {
-    var $this   = $(this), href
+    var $this   = $(this);
+    var href;
     var $target = $($this.attr('data-target') || (href = $this.attr('href')) && href.replace(/.*(?=#[^\s]+$)/, '')) //strip for ie7
     var options = $.extend({}, $target.data(), $this.data())
     var slideIndex = $this.attr('data-slide-to')
@@ -483,14 +485,14 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
     e.preventDefault()
   })
 
-  $(window).on('load', function () {
+  $(window).on('load', () => {
     $('[data-ride="carousel"]').each(function () {
       var $carousel = $(this)
       $carousel.carousel($carousel.data())
     })
   })
 
-}(jQuery);
+})(jQuery);
 
 /* ========================================================================
  * Bootstrap: collapse.js v3.0.2
@@ -512,7 +514,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
  * ======================================================================== */
 
 
-+function ($) { "use strict";
++($ => { "use strict";
 
   // COLLAPSE PUBLIC CLASS DEFINITION
   // ================================
@@ -652,7 +654,8 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
   // =================
 
   $(document).on('click.bs.collapse.data-api', '[data-toggle=collapse]', function (e) {
-    var $this   = $(this), href
+    var $this   = $(this);
+    var href;
     var target  = $this.attr('data-target')
         || e.preventDefault()
         || (href = $this.attr('href')) && href.replace(/.*(?=#[^\s]+$)/, '') //strip for ie7
@@ -670,7 +673,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
     $target.collapse(option)
   })
 
-}(jQuery);
+})(jQuery);
 
 /* ========================================================================
  * Bootstrap: dropdown.js v3.0.2
@@ -692,7 +695,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
  * ======================================================================== */
 
 
-+function ($) { "use strict";
++($ => { "use strict";
 
   // DROPDOWN CLASS DEFINITION
   // =========================
@@ -821,11 +824,11 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 
   $(document)
     .on('click.bs.dropdown.data-api', clearMenus)
-    .on('click.bs.dropdown.data-api', '.dropdown form', function (e) { e.stopPropagation() })
+    .on('click.bs.dropdown.data-api', '.dropdown form', e => { e.stopPropagation() })
     .on('click.bs.dropdown.data-api'  , toggle, Dropdown.prototype.toggle)
     .on('keydown.bs.dropdown.data-api', toggle + ', [role=menu]' , Dropdown.prototype.keydown)
 
-}(jQuery);
+})(jQuery);
 
 /* ========================================================================
  * Bootstrap: modal.js v3.0.2
@@ -847,7 +850,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
  * ======================================================================== */
 
 
-+function ($) { "use strict";
++($ => { "use strict";
 
   // MODAL CLASS DEFINITION
   // ======================
@@ -885,7 +888,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 
     this.$element.on('click.dismiss.modal', '[data-dismiss="modal"]', $.proxy(this.hide, this))
 
-    this.backdrop(function () {
+    this.backdrop(() => {
       var transition = $.support.transition && that.$element.hasClass('fade')
 
       if (!that.$element.parent().length) {
@@ -908,7 +911,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 
       transition ?
         that.$element.find('.modal-dialog') // wait for modal to slide in
-          .one($.support.transition.end, function () {
+          .one($.support.transition.end, () => {
             that.$element.focus().trigger(e)
           })
           .emulateTransitionEnd(300) :
@@ -966,7 +969,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
   Modal.prototype.hideModal = function () {
     var that = this
     this.$element.hide()
-    this.backdrop(function () {
+    this.backdrop(() => {
       that.removeBackdrop()
       that.$element.trigger('hidden.bs.modal')
     })
@@ -1063,16 +1066,16 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 
     $target
       .modal(option, this)
-      .one('hide', function () {
+      .one('hide', () => {
         $this.is(':visible') && $this.focus()
       })
   })
 
   $(document)
-    .on('show.bs.modal',  '.modal', function () { $(document.body).addClass('modal-open') })
-    .on('hidden.bs.modal', '.modal', function () { $(document.body).removeClass('modal-open') })
+    .on('show.bs.modal',  '.modal', () => { $(document.body).addClass('modal-open') })
+    .on('hidden.bs.modal', '.modal', () => { $(document.body).removeClass('modal-open') })
 
-}(jQuery);
+})(jQuery);
 
 /* ========================================================================
  * Bootstrap: tooltip.js v3.0.2
@@ -1095,7 +1098,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
  * ======================================================================== */
 
 
-+function ($) { "use strict";
++($ => { "use strict";
 
   // TOOLTIP PUBLIC CLASS DEFINITION
   // ===============================
@@ -1150,9 +1153,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
       this.fixTitle()
   }
 
-  Tooltip.prototype.getDefaults = function () {
-    return Tooltip.DEFAULTS
-  }
+  Tooltip.prototype.getDefaults = () => Tooltip.DEFAULTS
 
   Tooltip.prototype.getOptions = function (options) {
     options = $.extend({}, this.getDefaults(), this.$element.data(), options)
@@ -1171,7 +1172,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
     var options  = {}
     var defaults = this.getDefaults()
 
-    this._options && $.each(this._options, function (key, value) {
+    this._options && $.each(this._options, (key, value) => {
       if (defaults[key] != value) options[key] = value
     })
 
@@ -1188,7 +1189,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 
     if (!self.options.delay || !self.options.delay.show) return self.show()
 
-    self.timeout = setTimeout(function () {
+    self.timeout = setTimeout(() => {
       if (self.hoverState == 'in') self.show()
     }, self.options.delay.show)
   }
@@ -1203,7 +1204,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 
     if (!self.options.delay || !self.options.delay.hide) return self.hide()
 
-    self.timeout = setTimeout(function () {
+    self.timeout = setTimeout(() => {
       if (self.hoverState == 'out') self.hide()
     }, self.options.delay.hide)
   }
@@ -1376,12 +1377,10 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
     }, this.$element.offset())
   }
 
-  Tooltip.prototype.getCalculatedOffset = function (placement, pos, actualWidth, actualHeight) {
-    return placement == 'bottom' ? { top: pos.top + pos.height,   left: pos.left + pos.width / 2 - actualWidth / 2  } :
-           placement == 'top'    ? { top: pos.top - actualHeight, left: pos.left + pos.width / 2 - actualWidth / 2  } :
-           placement == 'left'   ? { top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left - actualWidth } :
-        /* placement == 'right' */ { top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left + pos.width   }
-  }
+  Tooltip.prototype.getCalculatedOffset = (placement, pos, actualWidth, actualHeight) => placement == 'bottom' ? { top: pos.top + pos.height,   left: pos.left + pos.width / 2 - actualWidth / 2  } :
+         placement == 'top'    ? { top: pos.top - actualHeight, left: pos.left + pos.width / 2 - actualWidth / 2  } :
+         placement == 'left'   ? { top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left - actualWidth } :
+      /* placement == 'right' */ { top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left + pos.width   }
 
   Tooltip.prototype.getTitle = function () {
     var title
@@ -1459,7 +1458,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
     return this
   }
 
-}(jQuery);
+})(jQuery);
 
 /* ========================================================================
  * Bootstrap: popover.js v3.0.2
@@ -1481,7 +1480,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
  * ======================================================================== */
 
 
-+function ($) { "use strict";
++($ => { "use strict";
 
   // POPOVER PUBLIC CLASS DEFINITION
   // ===============================
@@ -1507,9 +1506,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 
   Popover.prototype.constructor = Popover
 
-  Popover.prototype.getDefaults = function () {
-    return Popover.DEFAULTS
-  }
+  Popover.prototype.getDefaults = () => Popover.DEFAULTS
 
   Popover.prototype.setContent = function () {
     var $tip    = this.tip()
@@ -1577,7 +1574,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
     return this
   }
 
-}(jQuery);
+})(jQuery);
 
 /* ========================================================================
  * Bootstrap: scrollspy.js v3.0.2
@@ -1599,7 +1596,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
  * ======================================================================== */
 
 
-+function ($) { "use strict";
++($ => { "use strict";
 
   // SCROLLSPY CLASS DEFINITION
   // ==========================
@@ -1645,7 +1642,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
           && $href.length
           && [[ $href[offsetMethod]().top + (!$.isWindow(self.$scrollElement.get(0)) && self.$scrollElement.scrollTop()), href ]]) || null
       })
-      .sort(function (a, b) { return a[0] - b[0] })
+      .sort((a, b) => a[0] - b[0])
       .each(function () {
         self.offsets.push(this[0])
         self.targets.push(this[1])
@@ -1729,14 +1726,14 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
   // SCROLLSPY DATA-API
   // ==================
 
-  $(window).on('load', function () {
+  $(window).on('load', () => {
     $('[data-spy="scroll"]').each(function () {
       var $spy = $(this)
       $spy.scrollspy($spy.data())
     })
   })
 
-}(jQuery);
+})(jQuery);
 
 /* ========================================================================
  * Bootstrap: tab.js v3.0.2
@@ -1758,7 +1755,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
  * ======================================================================== */
 
 
-+function ($) { "use strict";
++($ => { "use strict";
 
   // TAB CLASS DEFINITION
   // ====================
@@ -1791,7 +1788,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
     var $target = $(selector)
 
     this.activate($this.parent('li'), $ul)
-    this.activate($target, $target.parent(), function () {
+    this.activate($target, $target.parent(), () => {
       $this.trigger({
         type: 'shown.bs.tab'
       , relatedTarget: previous
@@ -1799,7 +1796,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
     })
   }
 
-  Tab.prototype.activate = function (element, container, callback) {
+  Tab.prototype.activate = (element, container, callback) => {
     var $active    = container.find('> .active')
     var transition = callback
       && $.support.transition
@@ -1872,7 +1869,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
     $(this).tab('show')
   })
 
-}(jQuery);
+})(jQuery);
 
 /* ========================================================================
  * Bootstrap: affix.js v3.0.2
@@ -1894,7 +1891,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
  * ======================================================================== */
 
 
-+function ($) { "use strict";
++($ => { "use strict";
 
   // AFFIX CLASS DEFINITION
   // ======================
@@ -1985,7 +1982,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
   // AFFIX DATA-API
   // ==============
 
-  $(window).on('load', function () {
+  $(window).on('load', () => {
     $('[data-spy="affix"]').each(function () {
       var $spy = $(this)
       var data = $spy.data()
@@ -1999,4 +1996,4 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
     })
   })
 
-}(jQuery);
+})(jQuery);
